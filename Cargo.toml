@@ -1,0 +1,18 @@
+[package]
+name = "kiosk"
+version = "0.0.1"
+edition = "2024"
+
+[dependencies]
+eframe = "0.33.3"
+egui = "0.33.3"
+egui_extras = { version = "0.33.3", features = ["image", "svg"] }
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true
+overflow-checks = false
