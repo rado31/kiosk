@@ -1,5 +1,7 @@
 use super::*;
 
+const UPDATE_URL: &str = "http://localhost:8080/info";
+
 pub fn show(frame: Frame, ui: &mut Ui, width: f32, state: &mut State) {
     frame.show(ui, |ui| {
         ui.set_width(width);
@@ -20,16 +22,41 @@ pub fn show(frame: Frame, ui: &mut Ui, width: f32, state: &mut State) {
             let tm_img = Image::new(tm_svg).fit_to_exact_size(lang_img_size);
             let ru_img = Image::new(ru_svg).fit_to_exact_size(lang_img_size);
 
+            let is_updating = state.update_status != UpdateStatus::Idle;
+
             let restart_btn = Button::new(restart_img)
                 .min_size(restart_btn_size)
-                .fill(constants::BTN_BG_LIGHT)
+                .fill(if is_updating {
+                    constants::PRIMARY
+                } else {
+                    constants::BTN_BG_LIGHT
+                })
                 .corner_radius(12);
+
             let tm_btn = Button::new(tm_img).min_size(lang_btn_size).frame(false);
             let ru_btn = Button::new(ru_img).min_size(lang_btn_size).frame(false);
 
-            if ui.add(restart_btn).clicked() {
-                println!("Restarted")
-            };
+            let btn_clicked = ui.add(restart_btn).clicked();
+
+            // Start update check in background thread
+            if btn_clicked && !is_updating {
+                state.update_status = UpdateStatus::Checking;
+
+                let (tx, rx) = mpsc::channel();
+                state.update_receiver = Some(rx);
+
+                let ctx = ui.ctx().clone();
+
+                thread::spawn(move || {
+                    let result = match updater::check_for_update(UPDATE_URL) {
+                        Ok(Some(info)) => updater::download_update(&info).ok(),
+                        _ => None,
+                    };
+
+                    let _ = tx.send(result);
+                    ctx.request_repaint();
+                });
+            }
 
             ui.add_space(50.0);
 

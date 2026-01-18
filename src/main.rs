@@ -3,6 +3,9 @@ mod updater;
 mod utils;
 
 fn main() -> eframe::Result {
+    // Clean up old binary from previous update
+    updater::cleanup_old_binary();
+
     let options = eframe::NativeOptions::default();
 
     eframe::run_native(
