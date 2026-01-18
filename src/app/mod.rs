@@ -5,6 +5,7 @@ use crate::app::routes::Route;
 
 mod components;
 mod constants;
+mod i18n;
 mod routes;
 mod views;
 

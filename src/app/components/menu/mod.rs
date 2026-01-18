@@ -6,7 +6,7 @@ use egui::{
 };
 
 use crate::{
-    app::{State, constants, routes::Route},
+    app::{Language, State, constants, i18n::t, routes::Route},
     utils,
 };
 use button::Button;
@@ -14,7 +14,7 @@ use button::Button;
 pub fn show(state: &mut State, ui: &mut Ui) {
     ui.vertical_centered(|ui| {
         ui.label(
-            RichText::new("Terminal to buy railway tickets")
+            RichText::new(t(state.language, "terminal_title"))
                 .size(32.0)
                 .strong()
                 .color(constants::BLACK),

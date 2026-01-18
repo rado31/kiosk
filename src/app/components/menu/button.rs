@@ -15,12 +15,12 @@ impl<'a> Button<'a> {
         }
     }
 
-    pub fn label(&self) -> &'static str {
+    pub fn label(&self, lang: Language) -> &'static str {
         match self.route {
-            Route::Home => "Home",
-            Route::PrintTicket => "Print",
-            Route::Refund => "Refund",
-            Route::Seats => "Seats",
+            Route::Home => t(lang, "home"),
+            Route::PrintTicket => t(lang, "print_ticket"),
+            Route::Refund => t(lang, "refund"),
+            Route::Seats => t(lang, "seats"),
         }
     }
 
@@ -47,9 +47,11 @@ impl<'a> Button<'a> {
             StrokeKind::Outside,
         );
 
-        let mut child_ui = ui.new_child(UiBuilder::new().max_rect(rect.shrink(20.0)));
+        let mut child_ui = ui.new_child(UiBuilder::new().max_rect(rect));
 
         child_ui.vertical_centered(|ui| {
+            ui.add_space(20.0);
+
             let img = Image::new(self.icon_path.clone())
                 .fit_to_exact_size(img_size)
                 .tint(tint);
@@ -57,7 +59,7 @@ impl<'a> Button<'a> {
             ui.add(img);
             ui.add_space(10.0);
             ui.label(
-                RichText::new(self.label())
+                RichText::new(self.label(state.language))
                     .color(fg_active)
                     .strong()
                     .size(16.0),

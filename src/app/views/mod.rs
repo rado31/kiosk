@@ -1,6 +1,6 @@
 use egui::Ui;
 
-use crate::app::State;
+use crate::app::{State, i18n::t};
 
 pub mod home;
 pub mod print_ticket;

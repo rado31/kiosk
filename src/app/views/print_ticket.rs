@@ -1,7 +1,7 @@
 use super::*;
 
-pub fn show(_state: &mut State, ui: &mut Ui) {
-    ui.label("Print Ticket page");
+pub fn show(state: &mut State, ui: &mut Ui) {
+    ui.label(t(state.language, "print_ticket_page"));
 
     ui.add_space(10.0);
 }
