@@ -1,8 +1,9 @@
 use egui::{
-    Align, Button, Color32, Context, Frame, Image, Layout, Margin, RichText, Stroke,
-    TopBottomPanel, Ui, include_image, vec2,
+    Align, Area, Button, Context, Frame, Id, Image, Layout, Margin, Order, RichText, Shadow,
+    Stroke, Ui, include_image, pos2, vec2,
 };
 
-mod base;
+use crate::app::{Language, State, constants};
+
 pub mod header;
 pub mod menu;

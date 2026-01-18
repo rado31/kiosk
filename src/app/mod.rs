@@ -1,15 +1,24 @@
 use eframe::egui;
+use egui::{Frame, Margin};
 
 use crate::app::routes::Route;
 
 mod components;
+mod constants;
 mod routes;
 mod views;
+
+#[derive(Default, Clone, Copy, PartialEq)]
+pub enum Language {
+    #[default]
+    Turkmen,
+    Russian,
+}
 
 #[derive(Default)]
 pub struct State {
     pub current_route: Route,
-    // pub lang: String,
+    pub language: Language,
 }
 
 impl eframe::App for State {
@@ -21,11 +30,14 @@ impl eframe::App for State {
 
         ctx.set_style(style);
 
-        components::header::show(ctx);
+        components::header::show(ctx, self);
 
-        let container = egui::Frame::NONE
-            .fill(egui::Color32::from_rgb(246, 246, 246))
-            .inner_margin(30.0);
+        let container = Frame::NONE.fill(constants::BG).inner_margin(Margin {
+            top: 30 + components::header::HEIGHT,
+            left: 30,
+            right: 30,
+            bottom: 30,
+        });
 
         egui::CentralPanel::default()
             .frame(container)

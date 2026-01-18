@@ -7,17 +7,6 @@ pub struct Button<'a> {
 }
 
 impl<'a> Button<'a> {
-    pub fn label(&self) -> &'static str {
-        match self.route {
-            Route::Home => "Home",
-            Route::PrintTicket => "Print",
-            Route::Refund => "Refund",
-            Route::Seats => "Seats",
-        }
-    }
-}
-
-impl<'a> Button<'a> {
     pub fn new(icon_path: ImageSource<'a>, route: Route, color: Color32) -> Self {
         Self {
             icon_path,
@@ -26,26 +15,37 @@ impl<'a> Button<'a> {
         }
     }
 
+    pub fn label(&self) -> &'static str {
+        match self.route {
+            Route::Home => "Home",
+            Route::PrintTicket => "Print",
+            Route::Refund => "Refund",
+            Route::Seats => "Seats",
+        }
+    }
+
     pub fn show(&self, ui: &mut Ui, state: &mut State) {
         let btn_size = vec2(150.0, 100.0);
         let img_size = vec2(25.0, 25.0);
         let corner_radius = CornerRadius::from(12);
 
-        let blue = Color32::from_rgb(56, 67, 228);
-        let white = Color32::WHITE;
-        let black = Color32::BLACK;
-
         let is_active = state.current_route == self.route;
 
         let (bg_active, fg_active, tint) = if is_active {
-            (blue, white, white)
+            (constants::PRIMARY, constants::WHITE, constants::WHITE)
         } else {
-            (white, black, self.color)
+            (constants::WHITE, constants::BLACK, self.color)
         };
 
         let (rect, _response) = ui.allocate_exact_size(btn_size, Sense::click());
 
-        ui.painter().rect_filled(rect, corner_radius, bg_active);
+        ui.painter().rect(
+            rect,
+            corner_radius,
+            bg_active,
+            Stroke::new(1.0, constants::BORDER),
+            StrokeKind::Outside,
+        );
 
         let mut child_ui = ui.new_child(UiBuilder::new().max_rect(rect.shrink(20.0)));
 
