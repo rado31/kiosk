@@ -15,7 +15,7 @@ impl<'a> Button<'a> {
         }
     }
 
-    pub fn label(&self, lang: Language) -> &'static str {
+    fn label(&self, lang: Language) -> &'static str {
         match self.route {
             Route::Home => t(lang, "home"),
             Route::PrintTicket => t(lang, "print_ticket"),

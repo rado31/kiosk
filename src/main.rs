@@ -1,4 +1,5 @@
 mod app;
+mod updater;
 mod utils;
 
 fn main() -> eframe::Result {
