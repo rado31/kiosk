@@ -1,8 +1,11 @@
 mod app;
+mod logger;
 mod updater;
 mod utils;
 
 fn main() -> eframe::Result {
+    logger::init();
+
     // Clean up old binary from previous update
     updater::cleanup_old_binary();
 

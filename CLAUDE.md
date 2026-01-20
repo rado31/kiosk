@@ -44,6 +44,13 @@ pub fn show(ctx: &egui::Context, state: &mut State) {
 
 ### Key Modules
 
+#### Logger (`src/logger/mod.rs`)
+Runtime-configurable logging with `DEBUG` environment variable:
+- `DEBUG=1`: error + info logs to terminal
+- Default: error logs to `error.log` file (next to executable)
+
+Usage: `log::info!("message")`, `log::error!("message")`
+
 #### Updater (`src/updater/mod.rs`)
 Self-update system with:
 - `check_for_update(url)` - Checks remote JSON for newer version
