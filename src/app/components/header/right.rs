@@ -50,10 +50,14 @@ pub fn show(frame: Frame, ui: &mut Ui, width: f32, state: &mut State) {
                 thread::spawn(move || {
                     let result = match updater::check_for_update(UPDATE_URL) {
                         Ok(Some(info)) => updater::download_update(&info).ok(),
-                        _ => None,
+                        Ok(None) => None,
+                        Err(e) => {
+                            error!("{e}");
+                            None
+                        }
                     };
 
-                    let _ = tx.send(result);
+                    tx.send(result).ok();
                     ctx.request_repaint();
                 });
             }

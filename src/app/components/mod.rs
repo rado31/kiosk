@@ -7,7 +7,7 @@ use egui::{
 
 use crate::{
     app::{Language, State, UpdateStatus, constants},
-    updater,
+    error, updater,
 };
 
 pub mod header;

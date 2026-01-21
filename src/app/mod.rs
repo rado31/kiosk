@@ -3,7 +3,7 @@ use std::{path::PathBuf, sync::mpsc};
 use eframe::egui;
 use egui::{Frame, Margin};
 
-use crate::{app::routes::Route, updater};
+use crate::{app::routes::Route, error, updater};
 
 mod components;
 mod constants;
@@ -43,7 +43,9 @@ impl eframe::App for State {
                 self.update_status = UpdateStatus::Idle;
 
                 if let Some(path) = result {
-                    updater::install_and_restart(&path).ok();
+                    if let Err(e) = updater::install_and_restart(&path) {
+                        error!("{e}");
+                    };
                 }
             }
         }
