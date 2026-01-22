@@ -1,4 +1,4 @@
-use crate::app::{State, components, views};
+use super::{State, components, pages};
 
 #[derive(Default, Copy, Clone, PartialEq)]
 pub enum Route {
@@ -15,9 +15,9 @@ pub fn router(state: &mut State, ui: &mut egui::Ui) {
     }
 
     match state.current_route {
-        Route::Home => views::home::show(state, ui),
-        Route::PrintTicket => views::print_ticket::show(state, ui),
-        Route::Refund => views::refund::show(state, ui),
-        Route::Seats => views::seats::show(state, ui),
+        Route::Home => pages::home::show(state, ui),
+        Route::PrintTicket => pages::print_ticket::show(state, ui),
+        Route::Refund => pages::refund::show(state, ui),
+        Route::Seats => pages::seats::show(state, ui),
     }
 }

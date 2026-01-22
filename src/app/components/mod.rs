@@ -1,14 +1,21 @@
-use std::{sync::mpsc, thread};
-
 use egui::{
-    Align, Area, Button, Context, Frame, Id, Image, Layout, Margin, Order, RichText, Shadow,
-    Stroke, Ui, include_image, pos2, vec2,
+    Align, Align2, Area, Button, Color32, Context, CornerRadius, Frame, Id, Image, ImageSource,
+    Layout, Margin, Order, Pos2, ProgressBar, RichText, Sense, Shadow, Stroke, StrokeKind, Ui,
+    UiBuilder, Vec2, include_image, pos2, vec2,
 };
 
 use crate::{
-    app::{Language, State, UpdateStatus, constants},
-    error, updater,
+    app::{
+        constants::colors,
+        i18n::t,
+        routes::Route,
+        services::updater::{self, DownloadProgress, UpdateStatus},
+        state::{Language, State},
+    },
+    utils,
 };
 
+pub mod base;
 pub mod header;
 pub mod menu;
+pub mod updater_modal;

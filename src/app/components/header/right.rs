@@ -1,7 +1,5 @@
 use super::*;
 
-const UPDATE_URL: &str = "http://localhost:8080/info";
-
 pub fn show(frame: Frame, ui: &mut Ui, width: f32, state: &mut State) {
     frame.show(ui, |ui| {
         ui.set_width(width);
@@ -18,18 +16,18 @@ pub fn show(frame: Frame, ui: &mut Ui, width: f32, state: &mut State) {
 
             let restart_img = Image::new(restart_svg)
                 .fit_to_exact_size(restart_img_size)
-                .tint(constants::PRIMARY);
+                .tint(colors::PRIMARY);
             let tm_img = Image::new(tm_svg).fit_to_exact_size(lang_img_size);
             let ru_img = Image::new(ru_svg).fit_to_exact_size(lang_img_size);
 
-            let is_updating = state.update_status != UpdateStatus::Idle;
+            let is_updating = !matches!(state.update_status, UpdateStatus::Idle);
 
             let restart_btn = Button::new(restart_img)
                 .min_size(restart_btn_size)
                 .fill(if is_updating {
-                    constants::PRIMARY
+                    colors::PRIMARY
                 } else {
-                    constants::BTN_BG_LIGHT
+                    colors::BTN_BG_LIGHT
                 })
                 .corner_radius(12);
 
@@ -38,28 +36,9 @@ pub fn show(frame: Frame, ui: &mut Ui, width: f32, state: &mut State) {
 
             let btn_clicked = ui.add(restart_btn).clicked();
 
-            // Start update check in background thread
             if btn_clicked && !is_updating {
                 state.update_status = UpdateStatus::Checking;
-
-                let (tx, rx) = mpsc::channel();
-                state.update_receiver = Some(rx);
-
-                let ctx = ui.ctx().clone();
-
-                thread::spawn(move || {
-                    let result = match updater::check_for_update(UPDATE_URL) {
-                        Ok(Some(info)) => updater::download_update(&info).ok(),
-                        Ok(None) => None,
-                        Err(e) => {
-                            error!("{e}");
-                            None
-                        }
-                    };
-
-                    tx.send(result).ok();
-                    ctx.request_repaint();
-                });
+                state.update_receiver = Some(updater::start_check(ui.ctx()));
             }
 
             ui.add_space(50.0);
@@ -75,25 +54,30 @@ pub fn show(frame: Frame, ui: &mut Ui, width: f32, state: &mut State) {
                 state.language = Language::Turkmen;
             }
 
+            let show_underline = |ui: &mut Ui, points: [Pos2; 2]| {
+                ui.painter()
+                    .line_segment(points, Stroke::new(2.0, colors::PRIMARY));
+            };
+
             if state.language == Language::Turkmen {
-                ui.painter().line_segment(
+                show_underline(
+                    ui,
                     [
                         tm_response.rect.left_bottom(),
                         tm_response.rect.right_bottom(),
                     ],
-                    Stroke::new(2.0, constants::PRIMARY),
                 );
             }
 
             ui.add_space(10.0);
 
             if state.language == Language::Russian {
-                ui.painter().line_segment(
+                show_underline(
+                    ui,
                     [
                         ru_response.rect.left_bottom(),
                         ru_response.rect.right_bottom(),
                     ],
-                    Stroke::new(2.0, constants::PRIMARY),
                 );
             }
         })

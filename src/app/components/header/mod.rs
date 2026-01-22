@@ -14,12 +14,12 @@ pub fn show(ctx: &Context, state: &mut State) {
         .order(Order::Foreground)
         .show(ctx, |ui| {
             Frame::NONE
-                .fill(constants::WHITE)
+                .fill(colors::WHITE)
                 .shadow(Shadow {
                     offset: [0, 2],
                     blur: 8,
                     spread: 0,
-                    color: constants::SHADOW,
+                    color: colors::SHADOW,
                 })
                 .inner_margin(Margin::symmetric(30, 10))
                 .show(ui, |ui| {

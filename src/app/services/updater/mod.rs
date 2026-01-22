@@ -2,33 +2,82 @@ use std::{
     env, fs,
     path::{Path, PathBuf},
     process::Command,
+    sync::mpsc,
+    thread,
 };
 
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
 use ed25519_dalek::{PUBLIC_KEY_LENGTH, Signature, Verifier, VerifyingKey};
+use egui::Context;
 use reqwest::blocking::Client;
 use semver::Version;
-use serde::Deserialize;
 
 use crate::{
-    debug,
+    debug, error,
     errors::{AppError, Result},
+    utils,
 };
 
-const PUBLIC_KEY: &[u8; PUBLIC_KEY_LENGTH] = include_bytes!("../../keys/public.key");
+mod types;
 
-#[derive(Debug, Deserialize)]
-pub struct UpdateInfo {
-    pub version: String,
-    pub url: String,
-    pub signature: String,
+pub use types::{DownloadProgress, UpdateInfo, UpdateMessage, UpdateStatus};
+
+const UPDATE_URL: &str = "http://localhost:8080/info";
+const PUBLIC_KEY: &[u8; PUBLIC_KEY_LENGTH] = include_bytes!("../../../../keys/public.key");
+
+/// Start checking for updates in a background thread.
+/// Returns a receiver to get update messages.
+pub fn start_check(ctx: &Context) -> mpsc::Receiver<UpdateMessage> {
+    let (tx, rx) = mpsc::channel();
+    let ctx = ctx.clone();
+
+    thread::spawn(move || {
+        match check(UPDATE_URL) {
+            Ok(Some(info)) => {
+                let tx_progress = tx.clone();
+                let ctx_progress = ctx.clone();
+                let version = info.version.clone();
+
+                match download(&info, |downloaded, total| {
+                    tx_progress
+                        .send(UpdateMessage::Progress(DownloadProgress {
+                            downloaded,
+                            total,
+                            version: version.clone(),
+                        }))
+                        .ok();
+
+                    ctx_progress.request_repaint();
+                }) {
+                    Ok(path) => {
+                        tx.send(UpdateMessage::Downloaded(path)).ok();
+                    }
+                    Err(e) => {
+                        error!("{e}");
+                        tx.send(UpdateMessage::Done).ok();
+                    }
+                }
+            }
+            Ok(None) => {
+                tx.send(UpdateMessage::Done).ok();
+            }
+            Err(e) => {
+                error!("{e}");
+                tx.send(UpdateMessage::Done).ok();
+            }
+        }
+
+        ctx.request_repaint();
+    });
+
+    rx
 }
 
 /// Check if an update is available.
 /// Returns `Ok(Some(UpdateInfo))` if a newer version exists, `Ok(None)` if current is latest.
-pub fn check_for_update(url: &str) -> Result<Option<UpdateInfo>> {
+fn check(url: &str) -> Result<Option<UpdateInfo>> {
     debug!("Checking for updates at: {}", url);
 
     let client = Client::new();
@@ -56,7 +105,13 @@ pub fn check_for_update(url: &str) -> Result<Option<UpdateInfo>> {
 
 /// Download the update and verify its signature.
 /// Returns the path to the verified binary on success.
-pub fn download_update(info: &UpdateInfo) -> Result<PathBuf> {
+/// Calls the progress callback with (downloaded_bytes, total_bytes).
+pub fn download<F>(info: &UpdateInfo, mut on_progress: F) -> Result<PathBuf>
+where
+    F: FnMut(u64, u64),
+{
+    use std::io::Read;
+
     debug!("Downloading update from: {}", info.url);
 
     let client = Client::new();
@@ -64,7 +119,26 @@ pub fn download_update(info: &UpdateInfo) -> Result<PathBuf> {
 
     debug!("Download status: {}", response.status());
 
-    let bytes = response.bytes()?;
+    let total = response.content_length().unwrap_or(0);
+    let mut downloaded: u64 = 0;
+    let mut bytes = Vec::new();
+
+    let mut reader = response;
+    let mut buffer = [0u8; 8192];
+
+    loop {
+        let n = reader.read(&mut buffer)?;
+
+        if n == 0 {
+            break;
+        }
+
+        bytes.extend_from_slice(&buffer[..n]);
+        downloaded += n as u64;
+        on_progress(downloaded, total);
+
+        utils::sleep(10);
+    }
 
     debug!("Downloaded {} bytes", bytes.len());
 

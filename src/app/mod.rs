@@ -1,51 +1,44 @@
-use std::{path::PathBuf, sync::mpsc};
-
 use eframe::egui;
 use egui::{Frame, Margin};
 
-use crate::{app::routes::Route, error, updater};
+use crate::error;
 
 mod components;
 mod constants;
 mod i18n;
+mod pages;
 mod routes;
-mod views;
+mod services;
+mod state;
 
-#[derive(Default, Clone, Copy, PartialEq)]
-pub enum Language {
-    #[default]
-    Turkmen,
-    Russian,
-}
-
-#[derive(Default, Clone, Copy, PartialEq)]
-pub enum UpdateStatus {
-    #[default]
-    Idle,
-    Checking,
-    Downloading,
-}
-
-#[derive(Default)]
-pub struct State {
-    pub current_route: Route,
-    pub language: Language,
-    pub update_status: UpdateStatus,
-    pub update_receiver: Option<mpsc::Receiver<Option<PathBuf>>>,
-}
+pub use services::updater;
+use services::updater::{UpdateMessage, UpdateStatus};
+pub use state::State;
 
 impl eframe::App for State {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-        // Check for update result from background thread
+        // Check for update messages from background thread
         if let Some(receiver) = &self.update_receiver {
-            if let Ok(result) = receiver.try_recv() {
-                self.update_receiver = None;
-                self.update_status = UpdateStatus::Idle;
+            while let Ok(msg) = receiver.try_recv() {
+                match msg {
+                    UpdateMessage::Progress(progress) => {
+                        self.update_status = UpdateStatus::Downloading(progress);
+                    }
+                    UpdateMessage::Downloaded(path) => {
+                        self.update_receiver = None;
+                        self.update_status = UpdateStatus::Idle;
 
-                if let Some(path) = result {
-                    if let Err(e) = updater::install_and_restart(&path) {
-                        error!("{e}");
-                    };
+                        if let Err(e) = services::updater::install_and_restart(&path) {
+                            error!("{e}");
+                        }
+
+                        break;
+                    }
+                    UpdateMessage::Done => {
+                        self.update_receiver = None;
+                        self.update_status = UpdateStatus::Idle;
+                        break;
+                    }
                 }
             }
         }
@@ -59,15 +52,21 @@ impl eframe::App for State {
 
         components::header::show(ctx, self);
 
-        let container = Frame::NONE.fill(constants::BG).inner_margin(Margin {
-            top: 30 + components::header::HEIGHT,
-            left: 30,
-            right: 30,
-            bottom: 30,
-        });
+        let container = Frame::NONE
+            .fill(constants::colors::BG)
+            .inner_margin(Margin {
+                top: 30 + components::header::HEIGHT,
+                left: 30,
+                right: 30,
+                bottom: 30,
+            });
 
         egui::CentralPanel::default()
             .frame(container)
             .show(ctx, |ui| routes::router(self, ui));
+
+        if let UpdateStatus::Downloading(ref progress) = self.update_status {
+            components::updater_modal::show(ctx, progress);
+        }
     }
 }

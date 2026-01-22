@@ -32,9 +32,9 @@ impl<'a> Button<'a> {
         let is_active = state.current_route == self.route;
 
         let (bg_active, fg_active, tint) = if is_active {
-            (constants::PRIMARY, constants::WHITE, constants::WHITE)
+            (colors::PRIMARY, colors::WHITE, colors::WHITE)
         } else {
-            (constants::WHITE, constants::BLACK, self.color)
+            (colors::WHITE, colors::BLACK, self.color)
         };
 
         let (rect, _response) = ui.allocate_exact_size(btn_size, Sense::click());
@@ -43,7 +43,7 @@ impl<'a> Button<'a> {
             rect,
             corner_radius,
             bg_active,
-            Stroke::new(1.0, constants::BORDER),
+            Stroke::new(1.0, colors::BORDER),
             StrokeKind::Outside,
         );
 

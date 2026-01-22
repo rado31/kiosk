@@ -1,4 +1,4 @@
-use phf::phf_map;
+use super::*;
 
 pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // Menu buttons

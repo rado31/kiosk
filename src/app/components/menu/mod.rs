@@ -1,14 +1,7 @@
+use super::*;
+
 mod button;
 
-use egui::{
-    Color32, CornerRadius, Image, ImageSource, RichText, Sense, Stroke, StrokeKind, Ui, UiBuilder,
-    include_image, vec2,
-};
-
-use crate::{
-    app::{Language, State, constants, i18n::t, routes::Route},
-    utils,
-};
 use button::Button;
 
 pub fn show(state: &mut State, ui: &mut Ui) {
@@ -17,7 +10,7 @@ pub fn show(state: &mut State, ui: &mut Ui) {
             RichText::new(t(state.language, "terminal_title"))
                 .size(32.0)
                 .strong()
-                .color(constants::BLACK),
+                .color(colors::BLACK),
         )
     });
 
@@ -25,17 +18,17 @@ pub fn show(state: &mut State, ui: &mut Ui) {
         Button::new(
             include_image!("../../../assets/ticket-check.svg"),
             Route::Home,
-            constants::PRIMARY,
+            colors::PRIMARY,
         ),
         Button::new(
             include_image!("../../../assets/printer-check.svg"),
             Route::PrintTicket,
-            constants::BTN_GREEN,
+            colors::BTN_GREEN,
         ),
         Button::new(
             include_image!("../../../assets/ticket-x.svg"),
             Route::Refund,
-            constants::BTN_RED,
+            colors::BTN_RED,
         ),
     ];
 

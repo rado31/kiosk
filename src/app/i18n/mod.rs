@@ -1,7 +1,9 @@
+use phf::phf_map;
+
+use super::state::Language;
+
 mod russian;
 mod turkmen;
-
-use super::Language;
 
 pub fn t(lang: Language, key: &str) -> &'static str {
     let map = match lang {
