@@ -15,4 +15,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "print_ticket_page" => "Печать билета",
     "refund_page" => "Возврат билета",
     "seats_page" => "Выбор мест",
+
+    // Type of trip
+    "one_way" => "В одну сторону",
+    "round_trip" => "Туда и Обратно",
 };

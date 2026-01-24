@@ -15,4 +15,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "print_ticket_page" => "Bilet çap etmek",
     "refund_page" => "Yzyna gaýtarmak",
     "seats_page" => "Ýerleri saýlamak",
+
+    // Type of trip
+    "one_way" => "Bir tarap",
+    "round_trip" => "Gidiş we gaýdyş",
 };
