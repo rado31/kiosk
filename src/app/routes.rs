@@ -10,11 +10,11 @@ pub enum Route {
 }
 
 pub fn router(state: &mut State, ui: &mut egui::Ui) {
-    if state.current_route != Route::Seats {
+    if state.route != Route::Seats {
         components::menu::show(state, ui);
     }
 
-    match state.current_route {
+    match state.route {
         Route::Home => pages::home::show(state, ui),
         Route::PrintTicket => pages::print_ticket::show(state, ui),
         Route::Refund => pages::refund::show(state, ui),

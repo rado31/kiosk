@@ -11,7 +11,7 @@ pub enum Language {
 
 #[derive(Default)]
 pub struct State {
-    pub current_route: Route,
+    pub route: Route,
     pub language: Language,
     pub update_status: UpdateStatus,
     pub update_receiver: Option<mpsc::Receiver<UpdateMessage>>,

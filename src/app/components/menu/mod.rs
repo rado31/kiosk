@@ -41,4 +41,6 @@ pub fn show(state: &mut State, ui: &mut Ui) {
             button.show(ui, state);
         }
     });
+
+    ui.add_space(20.0);
 }

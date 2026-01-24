@@ -29,7 +29,7 @@ impl<'a> Button<'a> {
         let img_size = vec2(25.0, 25.0);
         let corner_radius = CornerRadius::from(12);
 
-        let is_active = state.current_route == self.route;
+        let is_active = state.route == self.route;
 
         let (bg_active, fg_active, tint) = if is_active {
             (colors::PRIMARY, colors::WHITE, colors::WHITE)
@@ -67,7 +67,7 @@ impl<'a> Button<'a> {
         });
 
         if utils::rect_is_clicked(ui, rect) {
-            state.current_route = self.route;
+            state.route = self.route;
         }
     }
 }
