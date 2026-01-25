@@ -19,4 +19,7 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // Type of trip
     "one_way" => "В одну сторону",
     "round_trip" => "Туда и Обратно",
+
+    // Passenger
+    "pnr" => "Пассажир"
 };

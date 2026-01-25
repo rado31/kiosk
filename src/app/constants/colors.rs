@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use egui::Color32;
+use super::*;
 
 /// Ant Design Default Theme Colors
 /// A clean, professional blue-based light color scheme

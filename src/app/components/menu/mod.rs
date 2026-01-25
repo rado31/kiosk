@@ -9,7 +9,6 @@ pub fn show(state: &mut State, ui: &mut Ui) {
         ui.label(
             RichText::new(t(state.language, "terminal_title"))
                 .size(32.0)
-                .strong()
                 .color(colors::BLACK),
         )
     });

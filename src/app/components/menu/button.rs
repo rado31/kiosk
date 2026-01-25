@@ -61,7 +61,6 @@ impl<'a> Button<'a> {
             ui.label(
                 RichText::new(self.label(state.language))
                     .color(fg_active)
-                    .strong()
                     .size(16.0),
             );
         });

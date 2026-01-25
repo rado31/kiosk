@@ -9,7 +9,7 @@ pub fn show(ctx: &Context, progress: &DownloadProgress) {
             ui.with_layout(Layout::top_down(Align::Center), |ui| {
                 let title = format!("Downloading update {}", progress.version);
 
-                ui.label(RichText::new(title).size(18.0).color(colors::FG).strong());
+                ui.label(RichText::new(title).size(18.0).color(colors::FG));
 
                 ui.add_space(20.0);
 

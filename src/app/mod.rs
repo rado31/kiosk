@@ -63,7 +63,7 @@ impl eframe::App for State {
 
         egui::CentralPanel::default()
             .frame(container)
-            .show(ctx, |ui| routes::router(self, ui));
+            .show(ctx, |ui| routes::router(self, ctx, ui));
 
         if let UpdateStatus::Downloading(ref progress) = self.update_status {
             components::updater_modal::show(ctx, progress);
