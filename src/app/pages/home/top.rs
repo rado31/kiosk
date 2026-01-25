@@ -56,7 +56,6 @@ impl<'a> Home<'a> {
                         (colors::BLACK, colors::WHITE)
                     };
 
-                    // 2. Draw text labels on TOP
                     ui.painter().text(
                         rect_1.center(),
                         Align2::CENTER_CENTER,
@@ -77,37 +76,70 @@ impl<'a> Home<'a> {
     }
 
     pub fn show_top_right(&mut self, ui: &mut Ui) {
-        let (rect, response) = ui.allocate_exact_size(vec2(RIGHT_WIDTH, HEIGHT), Sense::CLICK);
+        let btn_title = RichText::new(format!("{}  1", t(self.state.language, "pnr")))
+            .size(14.0)
+            .color(colors::BLACK);
 
-        ui.painter().rect(
-            rect,
-            corners::MEDIUM,
-            colors::BTN_PRIMARY_TEXT,
-            Stroke::new(1.0, colors::BORDER),
-            StrokeKind::Outside,
-        );
-
-        ui.painter().text(
-            rect.center(),
-            Align2::CENTER_CENTER,
-            format!("{}  1", t(self.state.language, "pnr")),
-            FontId::proportional(14.0),
-            colors::BLACK,
-        );
+        let btn = Button::new(btn_title)
+            .min_size(vec2(RIGHT_WIDTH, HEIGHT))
+            .stroke(Stroke::new(1.0, colors::BORDER))
+            .fill(colors::WHITE)
+            .corner_radius(corners::MEDIUM);
 
         let modal_id = ui.id().with("pnr_modal_state");
-        let mut modal_is_open = ui.data(|d| d.get_temp::<bool>(modal_id).unwrap_or(false));
+        let modal_is_open = ui.data(|d| d.get_temp::<bool>(modal_id).unwrap_or(false));
 
-        if response.clicked() {
+        if ui.add(btn).clicked() {
             ui.data_mut(|d| d.insert_temp(modal_id, true));
         }
 
         if modal_is_open {
-            let close = Modal::new("pnr_modal").show(self.ctx, |ui| {});
+            let close = Modal::new("pnr_modal")
+                .width(200.0)
+                .show(self.ctx, |ui| self.show_pnr_modal(ui));
 
             if close {
                 ui.data_mut(|d| d.insert_temp(modal_id, false));
             };
         }
+    }
+
+    fn show_pnr_modal(&self, ui: &mut Ui) {
+        ui.vertical_centered(|ui| {
+            ui.label(RichText::new("Uly adam").size(16.0).color(colors::BLACK));
+        });
+
+        ui.add_space(20.0);
+
+        ui.columns(3, |columns| {
+            let btn_minus = Button::new(RichText::new("-").size(28.0).color(colors::BLACK))
+                .min_size(vec2(50.0, 50.0))
+                .fill(colors::WHITE)
+                .stroke(Stroke::new(1.0, colors::BORDER))
+                .corner_radius(corners::SMALL);
+
+            let btn_plus = Button::new(RichText::new("+").size(28.0).color(colors::BLACK))
+                .min_size(vec2(50.0, 50.0))
+                .fill(colors::WHITE)
+                .stroke(Stroke::new(1.0, colors::BORDER))
+                .corner_radius(corners::SMALL);
+
+            columns[0].vertical_centered(|ui| {
+                if ui.add(btn_minus).clicked() {
+                    debug!("Minus clicked");
+                }
+            });
+
+            columns[1].vertical_centered(|ui| {
+                ui.add_space(10.0);
+                ui.label(RichText::new("9").size(24.0).color(colors::BLACK));
+            });
+
+            columns[2].vertical_centered(|ui| {
+                if ui.add(btn_plus).clicked() {
+                    debug!("Plus clicked");
+                }
+            });
+        });
     }
 }

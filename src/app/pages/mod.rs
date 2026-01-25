@@ -1,4 +1,4 @@
-use egui::{Align2, Context, FontId, Frame, Rect, Sense, Stroke, StrokeKind, Ui, pos2, vec2};
+use egui::{Align2, Button, Context, FontId, Frame, Rect, RichText, Sense, Stroke, Ui, pos2, vec2};
 
 use super::{
     State,
