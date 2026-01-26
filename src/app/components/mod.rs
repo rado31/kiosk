@@ -1,7 +1,7 @@
 use egui::{
     Align, Align2, Area, Button, Color32, Context, CornerRadius, Frame, Id, Image, ImageSource,
-    Layout, Margin, Order, Pos2, ProgressBar, RichText, Sense, Shadow, Stroke, StrokeKind, Ui,
-    UiBuilder, Vec2, include_image, pos2, vec2,
+    Layout, Margin, Order, Pos2, ProgressBar, RichText, Sense, Stroke, StrokeKind, TopBottomPanel,
+    Ui, UiBuilder, Vec2, include_image, vec2,
 };
 
 use crate::{

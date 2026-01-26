@@ -1,5 +1,5 @@
 use eframe::egui;
-use egui::{Frame, Margin};
+use egui::{CentralPanel, Frame};
 
 use crate::error;
 
@@ -52,16 +52,9 @@ impl eframe::App for State {
 
         components::header::show(ctx, self);
 
-        let container = Frame::NONE
-            .fill(constants::colors::BG)
-            .inner_margin(Margin {
-                top: 30 + components::header::HEIGHT,
-                left: 30,
-                right: 30,
-                bottom: 30,
-            });
+        let container = Frame::new().fill(constants::colors::BG).inner_margin(30.0);
 
-        egui::CentralPanel::default()
+        CentralPanel::default()
             .frame(container)
             .show(ctx, |ui| routes::router(self, ctx, ui));
 
