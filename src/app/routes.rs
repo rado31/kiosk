@@ -7,6 +7,7 @@ pub enum Route {
     PrintTicket,
     Refund,
     Seats,
+    History,
 }
 
 pub fn router(state: &mut State, ctx: &egui::Context, ui: &mut egui::Ui) {
@@ -19,5 +20,6 @@ pub fn router(state: &mut State, ctx: &egui::Context, ui: &mut egui::Ui) {
         Route::PrintTicket => pages::print_ticket::show(state, ui),
         Route::Refund => pages::refund::show(state, ui),
         Route::Seats => pages::seats::show(state, ui),
+        Route::History => pages::History::new(state).show(ui),
     }
 }

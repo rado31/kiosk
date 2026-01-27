@@ -7,7 +7,7 @@ use button::Button;
 pub fn show(state: &mut State, ui: &mut Ui) {
     ui.vertical_centered(|ui| {
         ui.label(
-            RichText::new(t(state.language, "terminal_title"))
+            RichText::new(t(state.lang, "terminal_title"))
                 .size(32.0)
                 .color(colors::BLACK),
         )
@@ -28,6 +28,11 @@ pub fn show(state: &mut State, ui: &mut Ui) {
             include_image!("../../../assets/ticket-x.svg"),
             Route::Refund,
             colors::BTN_RED,
+        ),
+        Button::new(
+            include_image!("../../../assets/ticket-check.svg"),
+            Route::History,
+            colors::SECONDARY,
         ),
     ];
 

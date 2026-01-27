@@ -7,137 +7,161 @@ const HEIGHT: f32 = 40.0;
 
 impl<'a> Home<'a> {
     pub fn show_top_left(&mut self, ui: &mut Ui) {
-        Frame::new()
+        let frame = Frame::new()
             .inner_margin(5)
             .corner_radius(8)
-            .stroke(Stroke::new(1.0, colors::BORDER))
-            .show(ui, |ui| {
-                ui.horizontal(|ui| {
-                    let (rect_1, response_1) =
-                        ui.allocate_exact_size(vec2(LEFT_WIDTH / 2.0, HEIGHT), Sense::CLICK);
+            .stroke(Stroke::new(1.0, colors::BORDER));
 
-                    let (rect_2, response_2) =
-                        ui.allocate_exact_size(vec2(LEFT_WIDTH / 2.0, HEIGHT), Sense::CLICK);
+        frame.show(ui, |ui| {
+            ui.horizontal(|ui| {
+                let (rect1, res1) =
+                    ui.allocate_exact_size(vec2(LEFT_WIDTH / 2.0, HEIGHT), Sense::CLICK);
 
-                    if response_1.clicked() {
-                        self.state.set_one_way();
-                    }
+                let (rect2, res2) =
+                    ui.allocate_exact_size(vec2(LEFT_WIDTH / 2.0, HEIGHT), Sense::CLICK);
 
-                    if response_2.clicked() {
-                        self.state.set_round_trip();
-                    }
+                if res1.clicked() {
+                    self.state.set_one_way_trip();
+                }
 
-                    let curr_rect = if self.state.is_one_way() {
-                        rect_1
-                    } else {
-                        rect_2
-                    };
+                if res2.clicked() {
+                    self.state.set_round_trip();
+                }
 
-                    let current_x = ui.ctx().animate_value_with_time(
-                        ui.id().with("tab_indicator"),
-                        curr_rect.min.x,
-                        0.2,
-                    );
+                let curr_rect = if self.state.is_one_way_trip() {
+                    rect1
+                } else {
+                    rect2
+                };
 
-                    let animated_rect = Rect::from_min_size(
-                        pos2(current_x, curr_rect.min.y),
-                        vec2(curr_rect.width(), curr_rect.height()),
-                    );
+                let curr_x = ui.ctx().animate_value_with_time(
+                    ui.id().with("tab_indicator"),
+                    curr_rect.min.x,
+                    0.2,
+                );
 
-                    ui.painter().rect_filled(
-                        animated_rect,
-                        corners::MEDIUM,
-                        colors::BTN_PRIMARY_BG,
-                    );
+                let anime_rect = Rect::from_min_size(
+                    pos2(curr_x, curr_rect.min.y),
+                    vec2(curr_rect.width(), curr_rect.height()),
+                );
 
-                    let (text_color_1, text_color_2) = if self.state.is_one_way() {
-                        (colors::WHITE, colors::BLACK)
-                    } else {
-                        (colors::BLACK, colors::WHITE)
-                    };
+                ui.painter()
+                    .rect_filled(anime_rect, corners::MEDIUM, colors::BTN_PRIMARY_BG);
 
+                let (txt_col1, txt_col2) = if self.state.is_one_way_trip() {
+                    (colors::WHITE, colors::BLACK)
+                } else {
+                    (colors::BLACK, colors::WHITE)
+                };
+
+                let write_lbl = |pos: Pos2, color: Color32, label: &str| {
                     ui.painter().text(
-                        rect_1.center(),
+                        pos,
                         Align2::CENTER_CENTER,
-                        t(self.state.language, "one_way"),
+                        label,
                         FontId::proportional(14.0),
-                        text_color_1,
+                        color,
                     );
+                };
 
-                    ui.painter().text(
-                        rect_2.center(),
-                        Align2::CENTER_CENTER,
-                        t(self.state.language, "round_trip"),
-                        FontId::proportional(14.0),
-                        text_color_2,
-                    );
-                });
+                write_lbl(rect1.center(), txt_col1, t(self.state.lang, "one_way"));
+                write_lbl(rect2.center(), txt_col2, t(self.state.lang, "round_trip"));
             });
+        });
     }
 
     pub fn show_top_right(&mut self, ui: &mut Ui) {
-        let btn_title = RichText::new(format!("{}  1", t(self.state.language, "pnr")))
-            .size(14.0)
-            .color(colors::BLACK);
+        let total_pnrs = format!(
+            "{}  {}",
+            t(self.state.lang, "pnr"),
+            self.state.pnr_counts.total()
+        );
 
+        let btn_title = RichText::new(total_pnrs).size(14.0).color(colors::BLACK);
         let btn = Button::new(btn_title)
             .min_size(vec2(RIGHT_WIDTH, HEIGHT))
             .stroke(Stroke::new(1.0, colors::BORDER))
             .fill(colors::WHITE)
             .corner_radius(corners::MEDIUM);
 
-        let modal_id = ui.id().with("pnr_modal_state");
-        let modal_is_open = ui.data(|d| d.get_temp::<bool>(modal_id).unwrap_or(false));
+        let mdl_id = ui.id().with("pnr_modal_state");
+        let mdl_is_open = ui.data(|d| d.get_temp::<bool>(mdl_id).unwrap_or(false));
 
         if ui.add(btn).clicked() {
-            ui.data_mut(|d| d.insert_temp(modal_id, true));
+            ui.data_mut(|d| d.insert_temp(mdl_id, true));
         }
 
-        if modal_is_open {
+        if mdl_is_open {
             let close = Modal::new("pnr_modal")
                 .width(200.0)
                 .show(self.ctx, |ui| self.show_pnr_modal(ui));
 
             if close {
-                ui.data_mut(|d| d.insert_temp(modal_id, false));
+                ui.data_mut(|d| d.insert_temp(mdl_id, false));
             };
         }
     }
 
-    fn show_pnr_modal(&self, ui: &mut Ui) {
+    fn show_pnr_modal(&mut self, ui: &mut Ui) {
+        self.show_pnr_type_count(ui, true);
+        ui.add_space(20.0);
+        self.show_pnr_type_count(ui, false);
+    }
+
+    fn show_pnr_type_count(&mut self, ui: &mut Ui, is_adult: bool) {
         ui.vertical_centered(|ui| {
-            ui.label(RichText::new("Uly adam").size(16.0).color(colors::BLACK));
+            let title = if is_adult {
+                t(self.state.lang, "adult")
+            } else {
+                t(self.state.lang, "child")
+            };
+
+            ui.label(RichText::new(title).size(16.0).color(colors::BLACK));
         });
 
         ui.add_space(20.0);
 
-        ui.columns(3, |columns| {
-            let btn_minus = Button::new(RichText::new("-").size(28.0).color(colors::BLACK))
-                .min_size(vec2(50.0, 50.0))
-                .fill(colors::WHITE)
-                .stroke(Stroke::new(1.0, colors::BORDER))
-                .corner_radius(corners::SMALL);
+        ui.columns_const(|[col1, col2, col3]| {
+            let create_btn = |text: &str| {
+                Button::new(RichText::new(text).size(28.0).color(colors::BLACK))
+                    .min_size(vec2(50.0, 50.0))
+                    .fill(colors::WHITE)
+                    .stroke(Stroke::new(1.0, colors::BORDER))
+                    .corner_radius(corners::SMALL)
+            };
 
-            let btn_plus = Button::new(RichText::new("+").size(28.0).color(colors::BLACK))
-                .min_size(vec2(50.0, 50.0))
-                .fill(colors::WHITE)
-                .stroke(Stroke::new(1.0, colors::BORDER))
-                .corner_radius(corners::SMALL);
+            let btn_minus = create_btn("-");
+            let btn_plus = create_btn("+");
 
-            columns[0].vertical_centered(|ui| {
+            col1.vertical_centered(|ui| {
                 if ui.add(btn_minus).clicked() {
-                    debug!("Minus clicked");
+                    if is_adult {
+                        self.state.pnr_counts.remove_adult();
+                    } else {
+                        self.state.pnr_counts.remove_child();
+                    }
                 }
             });
 
-            columns[1].vertical_centered(|ui| {
+            col2.vertical_centered(|ui| {
                 ui.add_space(10.0);
-                ui.label(RichText::new("9").size(24.0).color(colors::BLACK));
+
+                let count = if is_adult {
+                    format!("{}", self.state.pnr_counts.adults)
+                } else {
+                    format!("{}", self.state.pnr_counts.children)
+                };
+
+                ui.label(RichText::new(count).size(24.0).color(colors::BLACK));
             });
 
-            columns[2].vertical_centered(|ui| {
+            col3.vertical_centered(|ui| {
                 if ui.add(btn_plus).clicked() {
-                    debug!("Plus clicked");
+                    if is_adult {
+                        self.state.pnr_counts.add_adult();
+                    } else {
+                        self.state.pnr_counts.add_child();
+                    }
                 }
             });
         });

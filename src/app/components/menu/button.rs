@@ -21,6 +21,7 @@ impl<'a> Button<'a> {
             Route::PrintTicket => t(lang, "print_ticket"),
             Route::Refund => t(lang, "refund"),
             Route::Seats => t(lang, "seats"),
+            Route::History => t(lang, "history"),
         }
     }
 
@@ -59,7 +60,7 @@ impl<'a> Button<'a> {
             ui.add(img);
             ui.add_space(10.0);
             ui.label(
-                RichText::new(self.label(state.language))
+                RichText::new(self.label(state.lang))
                     .color(fg_active)
                     .size(16.0),
             );

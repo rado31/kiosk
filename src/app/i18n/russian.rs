@@ -6,6 +6,7 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "print_ticket" => "Печать билета",
     "refund" => "Возврат",
     "seats" => "Места",
+    "history" => "История",
 
     // Terminal title
     "terminal_title" => "Терминал для покупки ж/д билетов",
@@ -21,5 +22,7 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "round_trip" => "Туда и Обратно",
 
     // Passenger
-    "pnr" => "Пассажир"
+    "pnr" => "Пассажир",
+    "adult" => "Взрослый",
+    "child" => "Ребёнок",
 };

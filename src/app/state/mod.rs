@@ -2,43 +2,38 @@ use std::sync::mpsc;
 
 use super::{UpdateMessage, UpdateStatus, routes::Route};
 
-#[derive(Default, Clone, Copy, PartialEq)]
-pub enum Language {
-    #[default]
-    Turkmen,
-    Russian,
-}
+mod lang;
+mod pnrs;
+mod trip;
 
-#[derive(Default, PartialEq)]
-pub enum TripType {
-    #[default]
-    OneWay,
-    RoundTrip,
-}
+pub use lang::Language;
+pub use pnrs::PnrCounts;
+pub use trip::TripType;
 
 #[derive(Default)]
 pub struct State {
     pub route: Route,
-    pub language: Language,
+    pub lang: Language,
     pub update_status: UpdateStatus,
     pub update_receiver: Option<mpsc::Receiver<UpdateMessage>>,
     pub trip_type: TripType,
+    pub pnr_counts: PnrCounts,
 }
 
 impl State {
-    pub fn toggle_language(&mut self) {
-        self.language = if self.language == Language::Turkmen {
+    pub fn toggle_lang(&mut self) {
+        self.lang = if self.lang == Language::Turkmen {
             Language::Russian
         } else {
             Language::Turkmen
         };
     }
 
-    pub fn is_turkmen(&self) -> bool {
-        matches!(self.language, Language::Turkmen)
+    pub fn is_turkmen_lang(&self) -> bool {
+        matches!(self.lang, Language::Turkmen)
     }
 
-    pub fn set_one_way(&mut self) {
+    pub fn set_one_way_trip(&mut self) {
         self.trip_type = TripType::OneWay;
     }
 
@@ -46,7 +41,7 @@ impl State {
         self.trip_type = TripType::RoundTrip;
     }
 
-    pub fn is_one_way(&self) -> bool {
+    pub fn is_one_way_trip(&self) -> bool {
         matches!(self.trip_type, TripType::OneWay)
     }
 }

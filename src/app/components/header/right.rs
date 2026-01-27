@@ -29,12 +29,12 @@ pub fn show(ui: &mut Ui, state: &mut State) {
     let ru_response = ui.add(ru_btn);
     let tm_response = ui.add(tm_btn);
 
-    if tm_response.clicked() && !state.is_turkmen() {
-        state.toggle_language();
+    if tm_response.clicked() && !state.is_turkmen_lang() {
+        state.toggle_lang();
     }
 
-    if ru_response.clicked() && state.is_turkmen() {
-        state.toggle_language();
+    if ru_response.clicked() && state.is_turkmen_lang() {
+        state.toggle_lang();
     }
 
     let show_underline = |ui: &mut Ui, points: [Pos2; 2]| {
@@ -42,7 +42,7 @@ pub fn show(ui: &mut Ui, state: &mut State) {
             .line_segment(points, Stroke::new(2.0, colors::PRIMARY));
     };
 
-    if state.is_turkmen() {
+    if state.is_turkmen_lang() {
         show_underline(
             ui,
             [
@@ -54,7 +54,7 @@ pub fn show(ui: &mut Ui, state: &mut State) {
 
     ui.add_space(10.0);
 
-    if !state.is_turkmen() {
+    if !state.is_turkmen_lang() {
         show_underline(
             ui,
             [
