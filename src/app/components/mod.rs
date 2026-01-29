@@ -8,9 +8,9 @@ use crate::{
     app::{
         constants::colors,
         i18n::t,
-        routes::Route,
         services::updater::{self, DownloadProgress, UpdateStatus},
         state::{Language, State},
+        views::View,
     },
     utils,
 };

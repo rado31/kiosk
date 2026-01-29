@@ -1,6 +1,4 @@
-use std::sync::mpsc;
-
-use super::{UpdateMessage, UpdateStatus, routes::Route};
+use super::{NewUpdate, views::View};
 
 mod lang;
 mod modal;
@@ -14,10 +12,9 @@ use trip::Trip;
 
 #[derive(Default)]
 pub struct State {
-    pub route: Route,
     pub lang: Language,
-    pub update_status: UpdateStatus,
-    pub update_receiver: Option<mpsc::Receiver<UpdateMessage>>,
+    pub view: View,
+    pub new_update: NewUpdate,
     pub trip: Trip,
     pub pnr_counts: PnrCounts,
     pub modal: Modal,

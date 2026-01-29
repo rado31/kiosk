@@ -1,5 +1,3 @@
-use super::*;
-
 #[derive(Default, PartialEq)]
 pub enum Modal {
     #[default]

@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::mpsc};
 
 use serde::Deserialize;
 
@@ -32,4 +32,11 @@ pub enum UpdateMessage {
     Progress(DownloadProgress),
     Downloaded(PathBuf),
     Done,
+}
+
+/// Update statement
+#[derive(Default)]
+pub struct NewUpdate {
+    pub status: UpdateStatus,
+    pub receiver: Option<mpsc::Receiver<UpdateMessage>>,
 }

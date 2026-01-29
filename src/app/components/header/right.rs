@@ -17,11 +17,11 @@ pub fn show(ui: &mut Ui, state: &mut State) {
         .fill(colors::BTN_BG_LIGHT)
         .corner_radius(12);
 
-    let is_updating = !matches!(state.update_status, UpdateStatus::Idle);
+    let is_updating = !matches!(state.new_update.status, UpdateStatus::Idle);
 
     if ui.add(restart_btn).clicked() && !is_updating {
-        state.update_status = UpdateStatus::Checking;
-        state.update_receiver = Some(updater::start_check(ui.ctx()));
+        state.new_update.status = UpdateStatus::Checking;
+        state.new_update.receiver = Some(updater::start_check(ui.ctx()));
     }
 
     ui.add_space(50.0);

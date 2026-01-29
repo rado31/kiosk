@@ -2,26 +2,26 @@ use super::*;
 
 pub struct Button<'a> {
     pub icon_path: ImageSource<'a>,
-    pub route: Route,
+    pub view: View,
     pub color: Color32,
 }
 
 impl<'a> Button<'a> {
-    pub fn new(icon_path: ImageSource<'a>, route: Route, color: Color32) -> Self {
+    pub fn new(icon_path: ImageSource<'a>, view: View, color: Color32) -> Self {
         Self {
             icon_path,
-            route,
+            view,
             color,
         }
     }
 
     fn label(&self, lang: Language) -> &'static str {
-        match self.route {
-            Route::Home => t(lang, "home"),
-            Route::PrintTicket => t(lang, "print_ticket"),
-            Route::Refund => t(lang, "refund"),
-            Route::Seats => t(lang, "seats"),
-            Route::History => t(lang, "history"),
+        match self.view {
+            View::Home => t(lang, "home"),
+            View::PrintTicket => t(lang, "print_ticket"),
+            View::Refund => t(lang, "refund"),
+            View::Seats => t(lang, "seats"),
+            View::History => t(lang, "history"),
         }
     }
 
@@ -30,7 +30,7 @@ impl<'a> Button<'a> {
         let img_size = vec2(25.0, 25.0);
         let corner_radius = CornerRadius::from(12);
 
-        let is_active = state.route == self.route;
+        let is_active = state.view == self.view;
 
         let (bg_active, fg_active, tint) = if is_active {
             (colors::PRIMARY, colors::WHITE, colors::WHITE)
@@ -67,7 +67,7 @@ impl<'a> Button<'a> {
         });
 
         if utils::rect_is_clicked(ui, rect) {
-            state.route = self.route;
+            state.view = self.view;
         }
     }
 }

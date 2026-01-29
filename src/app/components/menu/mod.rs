@@ -16,22 +16,22 @@ pub fn show(state: &mut State, ui: &mut Ui) {
     let buttons = [
         Button::new(
             include_image!("../../../assets/ticket-check.svg"),
-            Route::Home,
+            View::Home,
             colors::PRIMARY,
         ),
         Button::new(
             include_image!("../../../assets/printer-check.svg"),
-            Route::PrintTicket,
+            View::PrintTicket,
             colors::BTN_GREEN,
         ),
         Button::new(
             include_image!("../../../assets/ticket-x.svg"),
-            Route::Refund,
+            View::Refund,
             colors::BTN_RED,
         ),
         Button::new(
             include_image!("../../../assets/ticket-check.svg"),
-            Route::History,
+            View::History,
             colors::SECONDARY,
         ),
     ];
