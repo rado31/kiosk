@@ -1,6 +1,7 @@
 use super::*;
 
-mod top;
+mod panel;
+mod stations;
 
 pub struct Home<'a> {
     state: &'a mut State,
@@ -21,13 +22,17 @@ impl<'a> Home<'a> {
             .show(ui, |ui| {
                 ui.set_width(ui.available_width());
 
-                let space = ui.available_width() - top::LEFT_WIDTH - top::RIGHT_WIDTH;
+                ui.columns_const(|[col1, _col2, col3]| {
+                    col1.horizontal(|ui| self.show_panel_top_left(ui));
+                    col3.with_layout(Layout::right_to_left(Align::Min), |ui| {
+                        self.show_panel_top_right(ui);
+                    });
+                });
 
-                ui.horizontal(|ui| {
-                    self.show_top_left(ui);
-                    ui.add_space(space);
-                    self.show_top_right(ui);
-                })
+                ui.add_space(20.0);
+
+                self.show_panel_bottom(ui);
+                self.show_stations(ui);
             });
     }
 }

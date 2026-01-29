@@ -47,7 +47,7 @@ impl<'a> Modal<'a> {
                 );
 
                 // Allocate response for click detection
-                let response = ui.allocate_response(screen_rect.size(), Sense::click());
+                let response = ui.allocate_response(screen_rect.size(), Sense::CLICK);
 
                 if self.is_closable && response.clicked() {
                     closed = true;

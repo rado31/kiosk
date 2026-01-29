@@ -3,12 +3,14 @@ use std::sync::mpsc;
 use super::{UpdateMessage, UpdateStatus, routes::Route};
 
 mod lang;
+mod modal;
 mod pnrs;
 mod trip;
 
 pub use lang::Language;
+use modal::Modal;
 pub use pnrs::PnrCounts;
-pub use trip::TripType;
+use trip::Trip;
 
 #[derive(Default)]
 pub struct State {
@@ -16,11 +18,13 @@ pub struct State {
     pub lang: Language,
     pub update_status: UpdateStatus,
     pub update_receiver: Option<mpsc::Receiver<UpdateMessage>>,
-    pub trip_type: TripType,
+    pub trip: Trip,
     pub pnr_counts: PnrCounts,
+    pub modal: Modal,
 }
 
 impl State {
+    // Language
     pub fn toggle_lang(&mut self) {
         self.lang = if self.lang == Language::Turkmen {
             Language::Russian
@@ -33,15 +37,24 @@ impl State {
         matches!(self.lang, Language::Turkmen)
     }
 
-    pub fn set_one_way_trip(&mut self) {
-        self.trip_type = TripType::OneWay;
+    // Modals
+    pub fn close_modal(&mut self) {
+        self.modal = Modal::Closed;
     }
 
-    pub fn set_round_trip(&mut self) {
-        self.trip_type = TripType::RoundTrip;
+    pub fn open_pnr_counts_modal(&mut self) {
+        self.modal = Modal::PnrCounts;
     }
 
-    pub fn is_one_way_trip(&self) -> bool {
-        matches!(self.trip_type, TripType::OneWay)
+    pub fn open_stations_modal(&mut self) {
+        self.modal = Modal::Stations;
+    }
+
+    pub fn is_pnr_counts_modal_opened(&self) -> bool {
+        matches!(self.modal, Modal::PnrCounts)
+    }
+
+    pub fn is_stations_modal_opened(&self) -> bool {
+        matches!(self.modal, Modal::Stations)
     }
 }

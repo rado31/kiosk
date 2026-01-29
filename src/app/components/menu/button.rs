@@ -38,7 +38,7 @@ impl<'a> Button<'a> {
             (colors::WHITE, colors::BLACK, self.color)
         };
 
-        let (rect, _response) = ui.allocate_exact_size(btn_size, Sense::click());
+        let (rect, _response) = ui.allocate_exact_size(btn_size, Sense::CLICK);
 
         ui.painter().rect(
             rect,

@@ -1,7 +1,9 @@
 use egui::{
-    Align2, Button, Color32, Context, FontId, Frame, Pos2, Rect, RichText, Sense, Stroke, Ui, pos2,
-    vec2,
+    Align, Align2, Button, Color32, Context, FontId, Frame, Layout, Pos2, Rect, RichText, Sense,
+    Stroke, StrokeKind, Ui, pos2, vec2,
 };
+
+use crate::debug;
 
 use super::{
     State,
