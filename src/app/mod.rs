@@ -5,7 +5,7 @@ mod components;
 mod constants;
 mod i18n;
 mod pages;
-mod services;
+pub mod services;
 mod state;
 mod views;
 
