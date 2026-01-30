@@ -9,8 +9,9 @@ mod services;
 mod state;
 mod views;
 
+use components::header::Header;
 pub use services::updater;
-use services::updater::{NewUpdate, UpdateMessage, UpdateStatus, check_receiver_of_update};
+use services::updater::{NewUpdate, UpdateStatus, check_receiver_of_update};
 pub use state::State;
 
 impl eframe::App for State {
@@ -24,7 +25,7 @@ impl eframe::App for State {
 
         ctx.set_style(style);
 
-        components::header::show(ctx, self);
+        Header::new(self, ctx).show();
 
         let container = Frame::new().fill(constants::colors::BG).inner_margin(30.0);
 
