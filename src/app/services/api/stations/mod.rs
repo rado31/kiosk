@@ -1,21 +1,45 @@
-use serde::Deserialize;
+use std::{
+    sync::mpsc::{Receiver, channel},
+    thread,
+};
 
-use crate::{debug, error};
+use crate::{debug, error, errors::Result};
 
-use super::Fetcher;
+use super::{ApiRes, Fetcher};
 
-mod types;
+pub mod types;
 
-pub fn get_all() {
-    let url = "";
-    let res = Fetcher::new().get(url);
+pub fn get_all() -> Receiver<Option<Vec<types::Station>>> {
+    let (tx, rx) = channel();
 
-    match res {
-        Ok(data) => {
-            let stations: types::StationsRes = data.json().unwrap();
+    thread::spawn(move || {
+        let url = "";
+        let data = Fetcher::new()
+            .get(url)
+            .inspect_err(|e| {
+                error!("Get stations. {e}");
+                tx.send(None).ok();
+            })
+            .ok()?;
 
-            debug!("{:#?}", stations);
+        let parsed_value: ApiRes<types::Data> = data
+            .json()
+            .inspect_err(|e| {
+                error!("Parse StationRes. {e}");
+                tx.send(None).ok();
+            })
+            .ok()?;
+
+        if let Some(data) = parsed_value.data {
+            tx.send(Some(data.stations)).ok();
         }
-        Err(error) => error!("{error}"),
-    };
+
+        if let Some(e) = parsed_value.error {
+            tx.send(None).ok();
+        }
+
+        Some(())
+    });
+
+    rx
 }

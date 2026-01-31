@@ -1,5 +1,7 @@
-use eframe::egui;
+use eframe::{Frame as Eframe, egui};
 use egui::{CentralPanel, Frame};
+
+use crate::debug;
 
 mod components;
 mod constants;
@@ -9,14 +11,37 @@ pub mod services;
 mod state;
 mod views;
 
-use components::header::Header;
+pub use components::header::Header;
 pub use services::updater;
 use services::updater::{NewUpdate, UpdateStatus, check_receiver_of_update};
 pub use state::State;
 
 impl eframe::App for State {
-    fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+    fn update(&mut self, ctx: &egui::Context, _frame: &mut Eframe) {
         check_receiver_of_update(self);
+
+        if !self.stations.has_fetched && !self.stations.is_fetching {
+            self.stations.is_fetching = true;
+            self.stations.receiver = Some(services::api::stations::get_all());
+        }
+
+        if let Some(rx) = &self.stations.receiver {
+            while let Ok(data) = rx.try_recv() {
+                match data {
+                    Some(stations) => self.stations.data = Some(stations),
+                    None => {}
+                }
+
+                self.stations.is_fetching = false;
+                self.stations.has_fetched = true;
+
+                ctx.request_repaint();
+            }
+        }
+
+        if self.stations.has_fetched {
+            self.stations.receiver = None;
+        }
 
         let mut style = (*ctx.style()).clone();
 

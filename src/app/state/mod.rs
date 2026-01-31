@@ -3,6 +3,7 @@ use super::{NewUpdate, views::View};
 mod lang;
 mod modal;
 mod pnrs;
+mod stations;
 mod trip;
 
 pub use lang::Language;
@@ -18,6 +19,7 @@ pub struct State {
     pub trip: Trip,
     pub pnr_counts: PnrCounts,
     pub modal: Modal,
+    pub stations: stations::State,
 }
 
 impl State {

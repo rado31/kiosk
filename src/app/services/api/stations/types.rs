@@ -1,4 +1,4 @@
-use super::*;
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug)]
 pub struct Station {
@@ -8,12 +8,6 @@ pub struct Station {
 }
 
 #[derive(Deserialize, Debug)]
-pub struct Stations {
+pub struct Data {
     pub stations: Vec<Station>,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct StationsRes {
-    pub success: bool,
-    pub data: Stations,
 }

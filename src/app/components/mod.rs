@@ -6,7 +6,7 @@ use egui::{
 
 use crate::{
     app::{
-        constants::colors,
+        constants::{colors, corners},
         i18n::t,
         services::updater::{self, DownloadProgress, UpdateStatus},
         state::{Language, State},
@@ -18,4 +18,5 @@ use crate::{
 pub mod base;
 pub mod header;
 pub mod menu;
+pub mod toast;
 pub mod updater_modal;
