@@ -1,7 +1,5 @@
 use super::*;
 
-use crate::app::state;
-
 impl<'a> Header<'a> {
     pub fn render_right(&mut self, ui: &mut Ui) {
         let lang_btn_size = vec2(35.0, 35.0);

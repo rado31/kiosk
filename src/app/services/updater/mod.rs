@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use std::{
     env, fs,
     path::{Path, PathBuf},
@@ -15,7 +17,6 @@ use reqwest::blocking::Client;
 use semver::Version;
 
 use crate::{
-    app::State,
     debug, error,
     errors::{AppError, Result},
     utils,
@@ -27,34 +28,6 @@ pub use types::{DownloadProgress, NewUpdate, UpdateInfo, UpdateMessage, UpdateSt
 
 const UPDATE_URL: &str = "http://localhost:8080/info";
 const PUBLIC_KEY: &[u8; PUBLIC_KEY_LENGTH] = include_bytes!("../../../../keys/public.key");
-
-/// Checks a `receiver` field in every frame for update
-pub fn check_receiver_of_update(state: &mut State) {
-    if let Some(receiver) = &state.new_update.receiver {
-        while let Ok(msg) = receiver.try_recv() {
-            match msg {
-                UpdateMessage::Progress(progress) => {
-                    state.new_update.status = UpdateStatus::Downloading(progress);
-                }
-                UpdateMessage::Downloaded(path) => {
-                    state.new_update.receiver = None;
-                    state.new_update.status = UpdateStatus::Idle;
-
-                    if let Err(e) = install_and_restart(&path) {
-                        error!("{e}");
-                    }
-
-                    break;
-                }
-                UpdateMessage::Done => {
-                    state.new_update.receiver = None;
-                    state.new_update.status = UpdateStatus::Idle;
-                    break;
-                }
-            }
-        }
-    }
-}
 
 /// Fetches for update in a background thread.
 /// Returns a receiver to get update messages.
@@ -224,7 +197,7 @@ pub fn cleanup_old_binary() {
 
 /// Install the new binary and restart the application.
 /// This function does not return on success.
-fn install_and_restart(new_binary: &Path) -> Result<()> {
+pub fn install_and_restart(new_binary: &Path) -> Result<()> {
     debug!("Installing update from: {}", new_binary.display());
 
     let current_exe = env::current_exe()?;

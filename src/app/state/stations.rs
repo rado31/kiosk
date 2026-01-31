@@ -1,6 +1,6 @@
 use std::sync::mpsc::Receiver;
 
-use crate::{app::services::api::stations::types::Station, errors::Result};
+use crate::app::services::api::stations::types::Station;
 
 #[derive(Default)]
 pub struct State {

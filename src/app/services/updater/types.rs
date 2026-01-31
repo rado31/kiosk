@@ -27,6 +27,15 @@ pub enum UpdateStatus {
     Downloading(DownloadProgress),
 }
 
+impl UpdateStatus {
+    pub fn downloading(&self) -> Option<&DownloadProgress> {
+        match self {
+            Self::Downloading(progress) => Some(progress),
+            _ => None,
+        }
+    }
+}
+
 /// Messages sent from the update background thread.
 pub enum UpdateMessage {
     Progress(DownloadProgress),

@@ -4,19 +4,19 @@ use egui::{
     Ui, UiBuilder, Vec2, include_image, vec2,
 };
 
-use crate::{
-    app::{
-        constants::{colors, corners},
-        i18n::t,
-        services::updater::{self, DownloadProgress, UpdateStatus},
-        state::{Language, State},
-        views::View,
-    },
-    utils,
+use crate::app::{
+    constants::{colors, corners},
+    i18n::t,
+    services::updater::DownloadProgress,
+    state::{Language, State},
+    views::View,
 };
 
 pub mod base;
-pub mod header;
-pub mod menu;
+mod header;
+mod menu;
 pub mod toast;
 pub mod updater_modal;
+
+pub use header::Header;
+pub use menu::Menu;

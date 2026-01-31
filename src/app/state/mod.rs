@@ -1,4 +1,4 @@
-use super::{NewUpdate, views::View};
+use super::{services::updater::NewUpdate, views::View};
 
 mod lang;
 mod modal;

@@ -3,7 +3,7 @@ use std::{
     thread,
 };
 
-use crate::{debug, error, errors::Result};
+use crate::error;
 
 use super::{ApiRes, Fetcher};
 
@@ -34,7 +34,7 @@ pub fn get_all() -> Receiver<Option<Vec<types::Station>>> {
             tx.send(Some(data.stations)).ok();
         }
 
-        if let Some(e) = parsed_value.error {
+        if let Some(_e) = parsed_value.error {
             tx.send(None).ok();
         }
 

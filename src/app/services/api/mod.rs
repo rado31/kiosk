@@ -1,12 +1,7 @@
-use std::sync::mpsc::Receiver;
-
-use reqwest::{
-    Error,
-    blocking::{Client, Response},
-};
+use reqwest::blocking::{Client, Response};
 use serde::Deserialize;
 
-use crate::{debug, error, errors::Result};
+use crate::errors::Result;
 
 pub mod stations;
 

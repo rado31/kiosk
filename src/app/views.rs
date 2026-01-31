@@ -12,7 +12,7 @@ pub enum View {
 
 pub fn view(state: &mut State, ctx: &egui::Context, ui: &mut egui::Ui) {
     if state.view != View::Seats {
-        components::menu::show(state, ui);
+        components::Menu::new(state).show(ui);
     }
 
     match state.view {

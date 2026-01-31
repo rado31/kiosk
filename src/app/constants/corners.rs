@@ -4,4 +4,4 @@ use super::*;
 
 pub const SMALL: CornerRadius = CornerRadius::same(4);
 pub const MEDIUM: CornerRadius = CornerRadius::same(8);
-pub const BIG: CornerRadius = CornerRadius::same(12);
+pub const LARGE: CornerRadius = CornerRadius::same(12);

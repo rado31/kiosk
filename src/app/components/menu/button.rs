@@ -28,8 +28,6 @@ impl<'a> Button<'a> {
     pub fn show(&self, ui: &mut Ui, state: &mut State) {
         let btn_size = vec2(150.0, 100.0);
         let img_size = vec2(25.0, 25.0);
-        let corner_radius = CornerRadius::from(12);
-
         let is_active = state.view == self.view;
 
         let (bg_active, fg_active, tint) = if is_active {
@@ -38,11 +36,11 @@ impl<'a> Button<'a> {
             (colors::WHITE, colors::BLACK, self.color)
         };
 
-        let (rect, _response) = ui.allocate_exact_size(btn_size, Sense::CLICK);
+        let (rect, res) = ui.allocate_exact_size(btn_size, Sense::CLICK);
 
         ui.painter().rect(
             rect,
-            corner_radius,
+            corners::LARGE,
             bg_active,
             Stroke::new(1.0, colors::BORDER),
             StrokeKind::Outside,
@@ -66,7 +64,7 @@ impl<'a> Button<'a> {
             );
         });
 
-        if utils::rect_is_clicked(ui, rect) {
+        if res.clicked() {
             state.view = self.view;
         }
     }

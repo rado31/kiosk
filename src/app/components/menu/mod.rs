@@ -4,47 +4,57 @@ mod button;
 
 use button::Button;
 
-pub fn show(state: &mut State, ui: &mut Ui) {
-    ui.vertical_centered(|ui| {
-        ui.label(
-            RichText::new(t(state.lang, "terminal_title"))
+pub struct Menu<'a> {
+    state: &'a mut State,
+}
+
+impl<'a> Menu<'a> {
+    pub fn new(state: &'a mut State) -> Self {
+        Self { state }
+    }
+
+    pub fn show(&mut self, ui: &mut Ui) {
+        ui.vertical_centered(|ui| {
+            let title = RichText::new(t(self.state.lang, "terminal_title"))
                 .size(32.0)
-                .color(colors::BLACK),
-        )
-    });
+                .color(colors::BLACK);
 
-    let buttons = [
-        Button::new(
-            include_image!("../../../assets/ticket-check.svg"),
-            View::Home,
-            colors::PRIMARY,
-        ),
-        Button::new(
-            include_image!("../../../assets/printer-check.svg"),
-            View::PrintTicket,
-            colors::BTN_GREEN,
-        ),
-        Button::new(
-            include_image!("../../../assets/ticket-x.svg"),
-            View::Refund,
-            colors::BTN_RED,
-        ),
-        Button::new(
-            include_image!("../../../assets/ticket-check.svg"),
-            View::History,
-            colors::SECONDARY,
-        ),
-    ];
+            ui.label(title)
+        });
 
-    ui.add_space(30.0);
+        let buttons = [
+            Button::new(
+                include_image!("../../../assets/ticket-check.svg"),
+                View::Home,
+                colors::PRIMARY,
+            ),
+            Button::new(
+                include_image!("../../../assets/printer-check.svg"),
+                View::PrintTicket,
+                colors::BTN_GREEN,
+            ),
+            Button::new(
+                include_image!("../../../assets/ticket-x.svg"),
+                View::Refund,
+                colors::BTN_RED,
+            ),
+            Button::new(
+                include_image!("../../../assets/ticket-check.svg"),
+                View::History,
+                colors::SECONDARY,
+            ),
+        ];
 
-    ui.horizontal(|ui| {
-        ui.style_mut().spacing.item_spacing.x = 10.0;
+        ui.add_space(30.0);
 
-        for button in buttons.iter() {
-            button.show(ui, state);
-        }
-    });
+        ui.horizontal(|ui| {
+            ui.style_mut().spacing.item_spacing.x = 10.0;
 
-    ui.add_space(20.0);
+            for button in buttons.iter() {
+                button.show(ui, self.state);
+            }
+        });
+
+        ui.add_space(20.0);
+    }
 }
