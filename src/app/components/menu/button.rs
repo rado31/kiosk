@@ -33,7 +33,7 @@ impl<'a> Button<'a> {
         }
     }
 
-    pub fn show(&self, ui: &mut Ui, state: &mut State) {
+    pub fn render(&self, ui: &mut Ui, state: &mut State) {
         let btn_size = vec2(150.0, 100.0);
         let img_size = vec2(25.0, 25.0);
         let is_active = state.view == self.view;
@@ -65,15 +65,16 @@ impl<'a> Button<'a> {
 
             ui.add(img);
             ui.add_space(10.0);
-            ui.label(
-                RichText::new(self.label(state.lang))
-                    .color(fg_active)
-                    .size(16.0),
-            );
+
+            let lbl = RichText::new(self.label(state.lang))
+                .color(fg_active)
+                .size(16.0);
+
+            ui.label(lbl);
         });
 
         if res.clicked() {
-            state.view = self.view;
+            state.go_to(self.view);
         }
     }
 }

@@ -85,7 +85,7 @@ impl State {
             .show(ctx, |ui| views::view(self, ctx, ui));
 
         if let Some(progress) = self.new_update.status.downloading() {
-            components::updater_modal::show(ctx, progress);
+            components::updater_modal::open(ctx, progress);
         }
     }
 }

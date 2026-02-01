@@ -10,10 +10,11 @@ impl<'a> Header<'a> {
     pub fn render_left(&self, ui: &mut Ui) {
         ui.add(Image::new(include_image!("../../../assets/logo.svg")));
         ui.add_space(30.0);
-        ui.label(
-            RichText::new(format!("{}", VERSION))
-                .size(14.0)
-                .color(colors::FG_MUTED),
-        );
+
+        let version = RichText::new(format!("{}", VERSION))
+            .size(14.0)
+            .color(colors::FG_MUTED);
+
+        ui.label(version);
     }
 }

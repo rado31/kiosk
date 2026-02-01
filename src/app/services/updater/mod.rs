@@ -2,6 +2,7 @@
 
 use std::{
     env, fs,
+    io::Read,
     path::{Path, PathBuf},
     process::Command,
     sync::mpsc,
@@ -17,7 +18,7 @@ use reqwest::blocking::Client;
 use semver::Version;
 
 use crate::{
-    debug, error,
+    error,
     errors::{AppError, Result},
     utils,
 };
@@ -36,42 +37,47 @@ pub fn start_check(ctx: &Context) -> mpsc::Receiver<UpdateMessage> {
     let ctx = ctx.clone();
 
     thread::spawn(move || {
-        match check(UPDATE_URL) {
-            Ok(Some(info)) => {
-                let tx_progress = tx.clone();
-                let ctx_progress = ctx.clone();
-                let version = info.version.clone();
-
-                match download(&info, |downloaded, total| {
-                    tx_progress
-                        .send(UpdateMessage::Progress(DownloadProgress {
-                            downloaded,
-                            total,
-                            version: version.clone(),
-                        }))
-                        .ok();
-
-                    ctx_progress.request_repaint();
-                }) {
-                    Ok(path) => {
-                        tx.send(UpdateMessage::Downloaded(path)).ok();
-                    }
-                    Err(e) => {
-                        error!("{e}");
-                        tx.send(UpdateMessage::Done).ok();
-                    }
-                }
-            }
-            Ok(None) => {
-                tx.send(UpdateMessage::Done).ok();
-            }
+        let opt_info = match check(UPDATE_URL) {
+            Ok(v) => v,
             Err(e) => {
-                error!("{e}");
+                error!("Check new update. {e}");
                 tx.send(UpdateMessage::Done).ok();
+                return;
             }
-        }
+        };
 
-        ctx.request_repaint();
+        if let Some(info) = opt_info {
+            let tx_progress = tx.clone();
+            let ctx_progress = ctx.clone();
+            let version = info.version.clone();
+
+            let res = download(&info, |downloaded, total| {
+                tx_progress
+                    .send(UpdateMessage::Progress(DownloadProgress {
+                        downloaded,
+                        total,
+                        version: version.clone(),
+                    }))
+                    .ok();
+
+                ctx_progress.request_repaint();
+            });
+
+            match res {
+                Ok(path) => {
+                    tx.send(UpdateMessage::Downloaded(path)).ok();
+                }
+                Err(e) => {
+                    error!("Download update. {e}");
+                    tx.send(UpdateMessage::Done).ok();
+                }
+            };
+
+            ctx.request_repaint();
+        } else {
+            tx.send(UpdateMessage::Done).ok();
+            ctx.request_repaint();
+        };
     });
 
     rx
@@ -80,51 +86,31 @@ pub fn start_check(ctx: &Context) -> mpsc::Receiver<UpdateMessage> {
 /// Check if an update is available.
 /// Returns `Ok(Some(UpdateInfo))` if a newer version exists, `Ok(None)` if current is latest.
 fn check(url: &str) -> Result<Option<UpdateInfo>> {
-    debug!("Checking for updates at: {}", url);
-
     let client = Client::new();
     let response = client.get(url).send()?;
-
-    debug!("Response status: {}", response.status());
-
     let info: UpdateInfo = response.json()?;
-
-    debug!("Remote version: {}", info.version);
-
     let current = Version::parse(env!("CARGO_PKG_VERSION"))?;
     let remote = Version::parse(&info.version)?;
 
-    debug!("Current: {} | Remote: {}", current, remote);
-
     if remote > current {
-        debug!("Update available!");
         return Ok(Some(info));
     }
 
-    debug!("Already up to date");
     Ok(None)
 }
 
 /// Download the update and verify its signature.
 /// Returns the path to the verified binary on success.
 /// Calls the progress callback with (downloaded_bytes, total_bytes).
-pub fn download<F>(info: &UpdateInfo, mut on_progress: F) -> Result<PathBuf>
+fn download<F>(info: &UpdateInfo, mut on_progress: F) -> Result<PathBuf>
 where
     F: FnMut(u64, u64),
 {
-    use std::io::Read;
-
-    debug!("Downloading update from: {}", info.url);
-
     let client = Client::new();
     let response = client.get(&info.url).send()?;
-
-    debug!("Download status: {}", response.status());
-
     let total = response.content_length().unwrap_or(0);
     let mut downloaded: u64 = 0;
     let mut bytes = Vec::new();
-
     let mut reader = response;
     let mut buffer = [0u8; 8192];
 
@@ -144,25 +130,12 @@ where
         utils::sleep(10);
     }
 
-    debug!("Downloaded {} bytes", bytes.len());
-
-    // Decode base64 signature
     let signature_bytes = base64_decode(&info.signature).ok_or_else(|| AppError::Base64Decode)?;
-
-    debug!("Signature length: {} bytes", signature_bytes.len());
-
     let signature = Signature::from_slice(&signature_bytes)?;
-
-    // Verify signature
     let public_key = VerifyingKey::from_bytes(PUBLIC_KEY)?;
-
-    debug!("Verifying signature...");
 
     public_key.verify(&bytes, &signature)?;
 
-    debug!("Signature verified successfully");
-
-    // Save to temp file (with .exe extension on Windows)
     let temp_name = if cfg!(windows) {
         "kiosk_update.exe"
     } else {
@@ -172,8 +145,6 @@ where
     let temp_path = env::temp_dir().join(temp_name);
 
     fs::write(&temp_path, &bytes)?;
-
-    debug!("Saved to: {}", temp_path.display());
 
     Ok(temp_path)
 }
@@ -185,7 +156,6 @@ pub fn cleanup_old_binary() {
 
         fs::remove_file(old_exe).ok();
 
-        // Windows may also have .exe.old
         #[cfg(windows)]
         {
             let old_exe_win = PathBuf::from(format!("{}.old", current_exe.display()));
@@ -198,18 +168,12 @@ pub fn cleanup_old_binary() {
 /// Install the new binary and restart the application.
 /// This function does not return on success.
 pub fn install_and_restart(new_binary: &Path) -> Result<()> {
-    debug!("Installing update from: {}", new_binary.display());
-
     let current_exe = env::current_exe()?;
-
-    debug!("Current executable: {}", current_exe.display());
 
     #[cfg(windows)]
     {
         // Windows: can't replace running executable, rename it first
         let old_exe = PathBuf::from(format!("{}.old", current_exe.display()));
-
-        debug!("Renaming current exe to: {}", old_exe.display());
 
         fs::remove_file(&old_exe).ok();
         fs::rename(&current_exe, &old_exe)?;
@@ -220,27 +184,16 @@ pub fn install_and_restart(new_binary: &Path) -> Result<()> {
     {
         // Unix: remove the running executable first (it stays in memory until process exits)
         fs::remove_file(&current_exe)?;
-
-        debug!("Removed current executable");
-
         fs::copy(new_binary, &current_exe)?;
 
-        // Set executable permissions
         let mut perms = fs::metadata(&current_exe)?.permissions();
 
         perms.set_mode(0o755);
 
         fs::set_permissions(&current_exe, perms)?;
-
-        debug!("Set executable permissions");
     }
 
-    // Clean up temp file
     fs::remove_file(new_binary).ok();
-
-    debug!("Cleaned up temp file");
-
-    debug!("Restarting application...");
 
     Command::new(&current_exe).spawn()?;
     std::process::exit(0);
@@ -252,7 +205,6 @@ fn base64_decode(input: &str) -> Option<Vec<u8>> {
 
     let input = input.trim_end_matches('=');
     let mut output = Vec::with_capacity(input.len() * 3 / 4);
-
     let mut buffer: u32 = 0;
     let mut bits_collected: u8 = 0;
 

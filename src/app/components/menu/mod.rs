@@ -53,7 +53,7 @@ impl<'a> Menu<'a> {
             ui.style_mut().spacing.item_spacing.x = 10.0;
 
             for button in buttons.iter() {
-                button.show(ui, self.state);
+                button.render(ui, self.state);
             }
         });
 

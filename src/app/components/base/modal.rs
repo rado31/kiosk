@@ -29,7 +29,7 @@ impl<'a> Modal<'a> {
 
     /// Shows the modal. Returns `true` if the modal was closed by clicking outside.
     /// When modal is open, all interaction with background widgets is blocked.
-    pub fn show<F: FnOnce(&mut Ui)>(self, ctx: &Context, content: F) -> bool {
+    pub fn open<F: FnOnce(&mut Ui)>(self, ctx: &Context, content: F) -> bool {
         let screen_rect = ctx.input(|i| i.viewport_rect());
         let mut closed = false;
 
@@ -38,14 +38,10 @@ impl<'a> Modal<'a> {
             .order(Order::Foreground)
             .fixed_pos(screen_rect.min)
             .show(ctx, |ui| {
-                // Expand UI bounds to full screen
                 ui.expand_to_include_rect(screen_rect);
-
-                // Paint overlay using painter_at to bypass UI clip rect
                 ui.painter_at(screen_rect)
                     .rect_filled(screen_rect, corners::ZERO, colors::OVERLAY);
 
-                // Allocate response for click detection
                 let response = ui.allocate_response(screen_rect.size(), Sense::CLICK);
 
                 if self.is_closable && response.clicked() {
@@ -58,7 +54,7 @@ impl<'a> Modal<'a> {
             .order(Order::Tooltip)
             .anchor(Align2::CENTER_CENTER, Vec2::ZERO)
             .show(ctx, |ui| {
-                Frame::NONE
+                Frame::new()
                     .fill(colors::WHITE)
                     .corner_radius(corners::LARGE)
                     .stroke(Stroke::new(1.0, colors::BORDER))

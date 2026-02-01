@@ -13,9 +13,8 @@ pub fn get_all() -> Receiver<Option<Vec<types::Station>>> {
     let (tx, rx) = channel();
 
     thread::spawn(move || {
-        let url = "";
-        let data = Fetcher::new()
-            .get(url)
+        let data = Fetcher::new("https://localhost")
+            .get("/stations")
             .inspect_err(|e| {
                 error!("Get stations. {e}");
                 tx.send(None).ok();
@@ -30,11 +29,16 @@ pub fn get_all() -> Receiver<Option<Vec<types::Station>>> {
             })
             .ok()?;
 
-        if let Some(data) = parsed_value.data {
+        if let Some(data) = parsed_value.data
+            && parsed_value.success
+        {
             tx.send(Some(data.stations)).ok();
         }
 
-        if let Some(_e) = parsed_value.error {
+        if let Some(e) = parsed_value.error
+            && !parsed_value.success
+        {
+            error!("API error of `GET /stations`. {e}");
             tx.send(None).ok();
         }
 

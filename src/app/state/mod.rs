@@ -23,6 +23,15 @@ pub struct State {
 }
 
 impl State {
+    pub fn reset(&mut self) {
+        *self = State::default();
+    }
+
+    // View
+    pub fn go_to(&mut self, view: View) {
+        self.view = view;
+    }
+
     // Language
     pub fn toggle_lang(&mut self) {
         self.lang = if self.lang == Language::Turkmen {

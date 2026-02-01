@@ -1,29 +1,29 @@
 use egui::{Button, Image, Pos2, Stroke, Ui, include_image, vec2};
 
-use crate::app::{State, constants::colors};
+use crate::app::constants::colors;
 
 use super::Header;
 
 impl<'a> Header<'a> {
     pub fn render_right(&mut self, ui: &mut Ui) {
         let lang_btn_size = vec2(35.0, 35.0);
-        let restart_btn_size = vec2(40.0, 40.0);
+        let refresh_btn_size = vec2(40.0, 40.0);
 
         let tm_img = Image::new(include_image!("../../../assets/tm.svg")).fit_to_original_size(1.0);
         let ru_img = Image::new(include_image!("../../../assets/ru.svg")).fit_to_original_size(1.0);
-        let restart_img = Image::new(include_image!("../../../assets/restart.svg"))
+        let refresh_img = Image::new(include_image!("../../../assets/refresh.svg"))
             .fit_to_original_size(1.0)
             .tint(colors::PRIMARY);
 
         let tm_btn = Button::new(tm_img).min_size(lang_btn_size).frame(false);
         let ru_btn = Button::new(ru_img).min_size(lang_btn_size).frame(false);
-        let restart_btn = Button::new(restart_img)
-            .min_size(restart_btn_size)
+        let refresh_btn = Button::new(refresh_img)
+            .min_size(refresh_btn_size)
             .fill(colors::BTN_BG_LIGHT)
             .corner_radius(12);
 
-        if ui.add(restart_btn).clicked() {
-            *self.state = State::default();
+        if ui.add(refresh_btn).clicked() {
+            self.state.reset();
         }
 
         ui.add_space(50.0);

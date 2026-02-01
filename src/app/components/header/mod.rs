@@ -1,4 +1,4 @@
-use egui::{Align, Context, Frame, Layout, Margin, Stroke, TopBottomPanel, Ui};
+use egui::{Align, Context, Frame, Layout, Margin, Stroke, TopBottomPanel};
 
 use crate::app::{State, constants::colors};
 

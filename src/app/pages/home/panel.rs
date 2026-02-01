@@ -118,7 +118,7 @@ impl<'a> Home<'a> {
         if self.state.is_pnr_counts_modal_opened() {
             let should_close = Modal::new("pnr_counts_modal")
                 .width(200.0)
-                .show(self.ctx, |ui| self.show_pnr_counts_modal(ui));
+                .open(self.ctx, |ui| self.show_pnr_counts_modal(ui));
 
             if should_close {
                 self.state.close_modal();

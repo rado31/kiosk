@@ -4,8 +4,7 @@ use super::Header;
 
 impl<'a> Header<'a> {
     pub fn render_mid(&self, ui: &mut Ui) {
-        ui.add(Image::new(include_image!(
-            "../../../assets/call_center.svg"
-        )));
+        let img = Image::new(include_image!("../../../assets/call_center.svg"));
+        ui.add(img);
     }
 }
