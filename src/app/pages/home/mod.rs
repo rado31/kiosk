@@ -1,4 +1,6 @@
-use super::*;
+use egui::{Align, Context, Frame, Layout, Stroke, Ui};
+
+use crate::app::{State, constants::colors};
 
 mod panel;
 mod stations;

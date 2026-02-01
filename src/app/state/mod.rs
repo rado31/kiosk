@@ -8,7 +8,7 @@ mod trip;
 
 pub use lang::Language;
 use modal::Modal;
-pub use pnrs::PnrCounts;
+use pnrs::PnrCounts;
 use trip::Trip;
 
 #[derive(Default)]

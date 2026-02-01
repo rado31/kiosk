@@ -1,5 +1,3 @@
-use phf::phf_map;
-
 use super::state::Language;
 
 mod russian;

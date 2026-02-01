@@ -1,4 +1,18 @@
-use super::*;
+use egui::{
+    Align2, Button, Color32, FontId, Frame, Pos2, Rect, RichText, Sense, Stroke, StrokeKind, Ui,
+    pos2, vec2,
+};
+
+use crate::{
+    app::{
+        components::base::Modal,
+        constants::{colors, corners},
+        i18n::t,
+    },
+    debug,
+};
+
+use super::Home;
 
 impl<'a> Home<'a> {
     pub fn show_panel_top_left(&mut self, ui: &mut Ui) {

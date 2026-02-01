@@ -1,4 +1,6 @@
-use super::*;
+use egui::{RichText, Ui, include_image};
+
+use crate::app::{State, constants::colors, i18n::t, views::View};
 
 mod button;
 

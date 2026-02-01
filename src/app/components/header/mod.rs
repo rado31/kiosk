@@ -1,4 +1,6 @@
-use super::*;
+use egui::{Align, Context, Frame, Layout, Margin, Stroke, TopBottomPanel, Ui};
+
+use crate::app::{State, constants::colors};
 
 mod left;
 mod mid;

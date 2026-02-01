@@ -1,4 +1,8 @@
-use super::*;
+use egui::Ui;
+
+use crate::app::components::base::Modal;
+
+use super::Home;
 
 impl<'a> Home<'a> {
     pub fn show_stations(&mut self, _ui: &mut Ui) {

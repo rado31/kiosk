@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 
-use super::*;
+use egui::{Frame, Stroke, Ui};
+
+use crate::app::{State, constants::colors};
 
 pub struct History<'a> {
     state: &'a mut State,

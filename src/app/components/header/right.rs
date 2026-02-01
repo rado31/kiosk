@@ -1,4 +1,8 @@
-use super::*;
+use egui::{Button, Image, Pos2, Stroke, Ui, include_image, vec2};
+
+use crate::app::{State, constants::colors};
+
+use super::Header;
 
 impl<'a> Header<'a> {
     pub fn render_right(&mut self, ui: &mut Ui) {

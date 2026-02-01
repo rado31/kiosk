@@ -1,4 +1,6 @@
-use super::*;
+use egui::{Align2, Area, Context, Frame, Id, Order, Stroke, Vec2};
+
+use crate::app::constants::{colors, corners};
 
 pub fn show(ctx: &Context) {
     Area::new(Id::new("toast"))

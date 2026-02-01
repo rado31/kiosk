@@ -1,4 +1,6 @@
-use super::super::*;
+use egui::{Align2, Area, Context, Frame, Id, Order, Sense, Stroke, Ui, Vec2};
+
+use crate::app::constants::{colors, corners};
 
 pub struct Modal<'a> {
     id: &'a str,
@@ -40,11 +42,8 @@ impl<'a> Modal<'a> {
                 ui.expand_to_include_rect(screen_rect);
 
                 // Paint overlay using painter_at to bypass UI clip rect
-                ui.painter_at(screen_rect).rect_filled(
-                    screen_rect,
-                    CornerRadius::ZERO,
-                    colors::OVERLAY,
-                );
+                ui.painter_at(screen_rect)
+                    .rect_filled(screen_rect, corners::ZERO, colors::OVERLAY);
 
                 // Allocate response for click detection
                 let response = ui.allocate_response(screen_rect.size(), Sense::CLICK);
@@ -61,7 +60,7 @@ impl<'a> Modal<'a> {
             .show(ctx, |ui| {
                 Frame::NONE
                     .fill(colors::WHITE)
-                    .corner_radius(CornerRadius::same(12))
+                    .corner_radius(corners::LARGE)
                     .stroke(Stroke::new(1.0, colors::BORDER))
                     .inner_margin(24.0)
                     .show(ui, |ui| {

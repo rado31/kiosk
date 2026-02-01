@@ -1,4 +1,6 @@
-use super::*;
+use egui::{Image, Ui, include_image};
+
+use super::Header;
 
 impl<'a> Header<'a> {
     pub fn render_mid(&self, ui: &mut Ui) {

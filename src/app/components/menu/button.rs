@@ -1,4 +1,12 @@
-use super::*;
+use egui::{Color32, Image, ImageSource, RichText, Sense, Stroke, StrokeKind, Ui, UiBuilder, vec2};
+
+use crate::app::{
+    State,
+    constants::{colors, corners},
+    i18n::t,
+    state::Language,
+    views::View,
+};
 
 pub struct Button<'a> {
     pub icon_path: ImageSource<'a>,

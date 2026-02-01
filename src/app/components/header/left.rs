@@ -1,4 +1,8 @@
-use super::*;
+use egui::{Image, RichText, Ui, include_image};
+
+use crate::app::constants::colors;
+
+use super::Header;
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
