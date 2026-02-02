@@ -20,7 +20,7 @@ impl<'a> Header<'a> {
         let frame = Frame::new()
             .fill(colors::WHITE)
             .stroke(Stroke::new(1.0, colors::BORDER))
-            .inner_margin(Margin::symmetric(30, 10));
+            .inner_margin(Margin::symmetric(20, 10));
 
         let top_panel = TopBottomPanel::top("top_panel")
             .frame(frame)

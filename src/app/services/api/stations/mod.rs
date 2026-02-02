@@ -13,7 +13,7 @@ pub fn get_all() -> Receiver<Option<Vec<types::Station>>> {
     let (tx, rx) = channel();
 
     thread::spawn(move || {
-        let data = Fetcher::new("https://localhost")
+        let data = Fetcher::new("https://localhost/v2")
             .get("/stations")
             .inspect_err(|e| {
                 error!("Get stations. {e}");

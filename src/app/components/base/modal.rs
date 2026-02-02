@@ -58,7 +58,7 @@ impl<'a> Modal<'a> {
                     .fill(colors::WHITE)
                     .corner_radius(corners::LARGE)
                     .stroke(Stroke::new(1.0, colors::BORDER))
-                    .inner_margin(24.0)
+                    .inner_margin(25.0)
                     .show(ui, |ui| {
                         ui.set_width(self.width);
                         content(ui);

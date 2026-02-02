@@ -1,5 +1,7 @@
 #![allow(dead_code)]
 
+use crate::app::services::api::stations::types::Station;
+
 #[derive(PartialEq)]
 enum TripKind {
     OneWay,
@@ -8,16 +10,16 @@ enum TripKind {
 
 pub struct Trip {
     kind: TripKind,
-    source: u16,
-    destination: u16,
+    source: Option<Station>,
+    destination: Option<Station>,
 }
 
 impl Default for Trip {
     fn default() -> Self {
         Self {
             kind: TripKind::OneWay,
-            source: 17,
-            destination: 0,
+            source: None,
+            destination: None,
         }
     }
 }
@@ -35,19 +37,17 @@ impl Trip {
         matches!(self.kind, TripKind::OneWay)
     }
 
-    pub fn get_source(&self) -> u16 {
+    pub fn set_source(&mut self, station: Station) {
+        self.source = Some(station);
+    }
+
+    pub fn set_destination(&mut self, station: Station) {
+        self.destination = Some(station);
+    }
+
+    pub fn get_source(&self) -> Station {
         self.source
-    }
-
-    pub fn get_destination(&self) -> u16 {
-        self.destination
-    }
-
-    pub fn set_source(&mut self, source: u16) {
-        self.source = source;
-    }
-
-    pub fn set_destination(&mut self, destination: u16) {
-        self.destination = destination;
+            .clone()
+            .unwrap_or(Station::new("Nirden".to_owned(), "Откуда".to_owned()))
     }
 }

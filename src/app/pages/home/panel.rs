@@ -205,7 +205,14 @@ impl<'a> Home<'a> {
 
         ui.columns_const(|[col1, col2, col3, col4]| {
             col1.vertical_centered(|ui| {
-                let source_btn = create_col_btn(ui, "source");
+                let source = self.state.trip.get_source();
+                let source = if self.state.is_turkmen_lang() {
+                    source.title_tm
+                } else {
+                    source.title_ru
+                };
+
+                let source_btn = create_col_btn(ui, &source);
 
                 if ui.add(source_btn).clicked() {
                     self.state.open_stations_modal()
