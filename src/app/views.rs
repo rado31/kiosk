@@ -14,11 +14,11 @@ pub enum View {
 }
 
 pub fn view(state: &mut State, ctx: &egui::Context, ui: &mut egui::Ui) {
-    if state.view != View::Seats {
+    if state.current_view() != View::Seats {
         components::Menu::new(state).show(ui);
     }
 
-    match state.view {
+    match state.current_view() {
         View::Home => Home::new(state, ctx).show(ui),
         View::PrintTicket => PrintTicket::new(state).show(ui),
         View::Refund => Refund::new(state).show(ui),

@@ -62,28 +62,22 @@ impl State {
     }
 
     pub fn fetch_stations(&mut self, ctx: &Context) {
-        if !self.stations.has_fetched && !self.stations.is_fetching {
-            self.stations.is_fetching = true;
-            self.stations.receiver = Some(api::stations::get_all());
+        if self.stations.should_fetch() {
+            self.stations.start_fetching(api::stations::get_all());
         }
 
-        if let Some(rx) = &self.stations.receiver {
+        if let Some(rx) = self.stations.take_receiver() {
+            let mut received = false;
+
             while let Ok(data) = rx.try_recv() {
-                match data {
-                    Some(stations) => self.stations.data = Some(stations),
-                    // TODO: show toast widget with error message
-                    None => {}
-                }
-
-                self.stations.is_fetching = false;
-                self.stations.has_fetched = true;
-
+                received = true;
+                self.stations.set_result(data);
                 ctx.request_repaint();
             }
-        }
 
-        if self.stations.has_fetched {
-            self.stations.receiver = None;
+            if !received {
+                self.stations.start_fetching(rx);
+            }
         }
     }
 

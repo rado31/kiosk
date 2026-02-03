@@ -36,7 +36,7 @@ impl<'a> Button<'a> {
     pub fn render(&self, ui: &mut Ui, state: &mut State) {
         let btn_size = vec2(150.0, 100.0);
         let img_size = vec2(25.0, 25.0);
-        let is_active = state.view == self.view;
+        let is_active = state.current_view() == self.view;
 
         let (bg_active, fg_active, tint) = if is_active {
             (colors::PRIMARY, colors::WHITE, colors::WHITE)

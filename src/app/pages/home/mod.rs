@@ -35,7 +35,7 @@ impl<'a> Home<'a> {
             ui.add_space(20.0);
 
             self.show_panel_bottom(ui);
-            self.show_stations(ui);
+            self.show_stations();
         });
     }
 }

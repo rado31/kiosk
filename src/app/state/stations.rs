@@ -3,11 +3,11 @@ use std::sync::mpsc::Receiver;
 use crate::app::services::api::stations::types::Station;
 
 pub struct State {
-    pub is_fetching: bool,
-    pub has_fetched: bool,
-    pub data: Option<Vec<Station>>,
-    pub receiver: Option<Receiver<Option<Vec<Station>>>>,
-    pub selected_letter: &'static str,
+    is_fetching: bool,
+    has_fetched: bool,
+    data: Option<Vec<Station>>,
+    receiver: Option<Receiver<Option<Vec<Station>>>>,
+    selected_letter: &'static str,
 }
 
 impl Default for State {
@@ -25,6 +25,26 @@ impl Default for State {
 impl State {
     pub fn get(&self) -> Option<&Vec<Station>> {
         self.data.as_ref()
+    }
+
+    pub fn should_fetch(&self) -> bool {
+        !self.has_fetched && !self.is_fetching
+    }
+
+    pub fn start_fetching(&mut self, receiver: Receiver<Option<Vec<Station>>>) {
+        self.is_fetching = true;
+        self.receiver = Some(receiver);
+    }
+
+    pub fn take_receiver(&mut self) -> Option<Receiver<Option<Vec<Station>>>> {
+        self.receiver.take()
+    }
+
+    pub fn set_result(&mut self, data: Option<Vec<Station>>) {
+        self.data = data;
+        self.is_fetching = false;
+        self.has_fetched = true;
+        self.receiver = None;
     }
 
     pub fn get_letter(&self) -> &str {

@@ -8,7 +8,7 @@ use crate::app::{
 use super::Home;
 
 impl<'a> Home<'a> {
-    pub fn show_stations(&mut self, ui: &mut Ui) {
+    pub fn show_stations(&mut self) {
         if self.state.modal.is_source() || self.state.modal.is_destination() {
             let should_close = Modal::new("pnr_counts_modal")
                 .width(880.0)
@@ -39,7 +39,7 @@ impl<'a> Home<'a> {
         for row in rows {
             ui.horizontal(|ui| {
                 for letter in row.iter().filter(|l| !l.is_empty()) {
-                    let is_selected = self.state.stations.selected_letter == *letter;
+                    let is_selected = self.state.stations.get_letter() == *letter;
 
                     let (bg_color, fg_color) = if is_selected {
                         (colors::BTN_PRIMARY_BG, colors::WHITE)

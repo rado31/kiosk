@@ -8,8 +8,8 @@ mod trip;
 
 #[derive(Default)]
 pub struct State {
+    view: View,
     pub lang: language::State,
-    pub view: View,
     pub new_update: NewUpdate,
     pub pnr_counts: pnrs::State,
     pub modal: modal::State,
@@ -22,6 +22,10 @@ impl State {
         self.pnr_counts = pnrs::State::default();
         self.stations = stations::State::default();
         self.trip = trip::State::default();
+    }
+
+    pub fn current_view(&self) -> View {
+        self.view
     }
 
     pub fn go_to(&mut self, view: View) {
