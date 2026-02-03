@@ -1,9 +1,9 @@
-pub struct PnrCounts {
+pub struct State {
     pub adults: i8,
     pub children: i8,
 }
 
-impl Default for PnrCounts {
+impl Default for State {
     fn default() -> Self {
         Self {
             adults: 1,
@@ -12,7 +12,7 @@ impl Default for PnrCounts {
     }
 }
 
-impl PnrCounts {
+impl State {
     pub fn total(&self) -> i8 {
         self.adults + self.children
     }
@@ -22,7 +22,7 @@ impl PnrCounts {
     }
 
     fn can_remove(&self, new_total: i8) -> bool {
-        new_total >= 0 && (new_total > 0 || self.total() > 1)
+        new_total >= 0 && self.total() > 1
     }
 
     pub fn add_adult(&mut self) {

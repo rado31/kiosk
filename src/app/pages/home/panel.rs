@@ -65,14 +65,14 @@ impl<'a> Home<'a> {
             ui,
             rect1.center(),
             txt_color1,
-            t(self.state.lang, "one_way"),
+            t(self.state.lang.get(), "one_way"),
         );
 
         self.draw_centered_text(
             ui,
             rect2.center(),
             txt_color2,
-            t(self.state.lang, "round_trip"),
+            t(self.state.lang.get(), "round_trip"),
         );
     }
 
@@ -89,7 +89,7 @@ impl<'a> Home<'a> {
     pub fn show_panel_top_right(&mut self, ui: &mut Ui) {
         let total_pnrs = format!(
             "{}  {}",
-            t(self.state.lang, "pnr"),
+            t(self.state.lang.get(), "pnr"),
             self.state.pnr_counts.total()
         );
 
@@ -112,21 +112,21 @@ impl<'a> Home<'a> {
         );
 
         if res.clicked() {
-            self.state.open_pnr_counts_modal();
+            self.state.modal.pnr_counts();
         }
 
-        if self.state.is_pnr_counts_modal_opened() {
+        if self.state.modal.is_pnr_counts() {
             let should_close = Modal::new("pnr_counts_modal")
                 .width(200.0)
-                .open(self.ctx, |ui| self.show_pnr_counts_modal(ui));
+                .open(self.ctx, |ui| self.render_pnr_counts_modal(ui));
 
             if should_close {
-                self.state.close_modal();
+                self.state.modal.close();
             };
         }
     }
 
-    fn show_pnr_counts_modal(&mut self, ui: &mut Ui) {
+    fn render_pnr_counts_modal(&mut self, ui: &mut Ui) {
         self.render_pnr_counter(ui, true);
         ui.add_space(20.0);
         self.render_pnr_counter(ui, false);
@@ -135,9 +135,9 @@ impl<'a> Home<'a> {
     fn render_pnr_counter(&mut self, ui: &mut Ui, is_adult: bool) {
         ui.vertical_centered(|ui| {
             let title = if is_adult {
-                t(self.state.lang, "adult")
+                t(self.state.lang.get(), "adult")
             } else {
-                t(self.state.lang, "child")
+                t(self.state.lang.get(), "child")
             };
 
             ui.label(RichText::new(title).size(16.0).color(colors::BLACK));
@@ -204,9 +204,11 @@ impl<'a> Home<'a> {
         };
 
         ui.columns_const(|[col1, col2, col3, col4]| {
+            let is_turkmen_lang = self.state.lang.is_turkmen();
+
             col1.vertical_centered(|ui| {
                 let source = self.state.trip.get_source();
-                let source = if self.state.is_turkmen_lang() {
+                let source = if is_turkmen_lang {
                     source.title_tm
                 } else {
                     source.title_ru
@@ -215,15 +217,22 @@ impl<'a> Home<'a> {
                 let source_btn = create_col_btn(ui, &source);
 
                 if ui.add(source_btn).clicked() {
-                    self.state.open_stations_modal()
+                    self.state.modal.source();
                 }
             });
 
             col2.vertical_centered(|ui| {
-                let destination_btn = create_col_btn(ui, "destination");
+                let destination = self.state.trip.get_destination();
+                let destination = if is_turkmen_lang {
+                    destination.title_tm
+                } else {
+                    destination.title_ru
+                };
+
+                let destination_btn = create_col_btn(ui, &destination);
 
                 if ui.add(destination_btn).clicked() {
-                    self.state.open_stations_modal()
+                    self.state.modal.destination();
                 }
             });
 

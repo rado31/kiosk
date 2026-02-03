@@ -8,11 +8,19 @@ pub struct Station {
 }
 
 impl Station {
-    pub fn new(title_tm: String, title_ru: String) -> Self {
+    pub fn placeholder_source() -> Self {
         Self {
             id: 0,
-            title_tm,
-            title_ru,
+            title_tm: "Nireden".to_owned(),
+            title_ru: "Откуда".to_owned(),
+        }
+    }
+
+    pub fn placeholder_destination() -> Self {
+        Self {
+            id: 0,
+            title_tm: "Nirä".to_owned(),
+            title_ru: "Куда".to_owned(),
         }
     }
 }

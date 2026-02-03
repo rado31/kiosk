@@ -1,12 +1,12 @@
-use super::state::Language;
+use super::state::language::Kind;
 
 mod russian;
 mod turkmen;
 
-pub fn t(lang: Language, key: &str) -> &'static str {
+pub fn t(lang: &Kind, key: &str) -> &'static str {
     let map = match lang {
-        Language::Turkmen => &turkmen::TRANSLATIONS,
-        Language::Russian => &russian::TRANSLATIONS,
+        Kind::Turkmen => &turkmen::TRANSLATIONS,
+        Kind::Russian => &russian::TRANSLATIONS,
     };
 
     map.get(key).copied().unwrap_or("???")

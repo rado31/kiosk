@@ -4,7 +4,7 @@ use crate::app::{
     State,
     constants::{colors, corners},
     i18n::t,
-    state::Language,
+    state::language::Kind,
     views::View,
 };
 
@@ -23,7 +23,7 @@ impl<'a> Button<'a> {
         }
     }
 
-    fn label(&self, lang: Language) -> &'static str {
+    fn label(&self, lang: &Kind) -> &'static str {
         match self.view {
             View::Home => t(lang, "home"),
             View::PrintTicket => t(lang, "print_ticket"),
@@ -66,7 +66,7 @@ impl<'a> Button<'a> {
             ui.add(img);
             ui.add_space(10.0);
 
-            let lbl = RichText::new(self.label(state.lang))
+            let lbl = RichText::new(self.label(state.lang.get()))
                 .color(fg_active)
                 .size(16.0);
 

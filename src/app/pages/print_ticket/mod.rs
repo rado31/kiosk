@@ -12,7 +12,7 @@ impl<'a> PrintTicket<'a> {
     }
 
     pub fn show(&self, ui: &mut Ui) {
-        ui.label(t(self.state.lang, "print_ticket_page"));
+        ui.label(t(self.state.lang.get(), "print_ticket_page"));
 
         ui.add_space(10.0);
     }

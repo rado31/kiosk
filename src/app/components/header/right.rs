@@ -31,12 +31,12 @@ impl<'a> Header<'a> {
         let ru_response = ui.add(ru_btn);
         let tm_response = ui.add(tm_btn);
 
-        if tm_response.clicked() && !self.state.is_turkmen_lang() {
-            self.state.toggle_lang();
+        if tm_response.clicked() && !self.state.lang.is_turkmen() {
+            self.state.lang.toggle();
         }
 
-        if ru_response.clicked() && self.state.is_turkmen_lang() {
-            self.state.toggle_lang();
+        if ru_response.clicked() && self.state.lang.is_turkmen() {
+            self.state.lang.toggle();
         }
 
         let draw_underline = |ui: &mut Ui, points: [Pos2; 2]| {
@@ -44,7 +44,7 @@ impl<'a> Header<'a> {
                 .line_segment(points, Stroke::new(2.0, colors::PRIMARY));
         };
 
-        if self.state.is_turkmen_lang() {
+        if self.state.lang.is_turkmen() {
             draw_underline(
                 ui,
                 [
@@ -56,7 +56,7 @@ impl<'a> Header<'a> {
 
         ui.add_space(10.0);
 
-        if !self.state.is_turkmen_lang() {
+        if !self.state.lang.is_turkmen() {
             draw_underline(
                 ui,
                 [

@@ -12,7 +12,7 @@ impl<'a> Refund<'a> {
     }
 
     pub fn show(&self, ui: &mut Ui) {
-        ui.label(t(self.state.lang, "refund_page"));
+        ui.label(t(self.state.lang.get(), "refund_page"));
 
         ui.add_space(10.0);
     }

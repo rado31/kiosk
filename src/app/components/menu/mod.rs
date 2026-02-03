@@ -17,7 +17,7 @@ impl<'a> Menu<'a> {
 
     pub fn show(&mut self, ui: &mut Ui) {
         ui.vertical_centered(|ui| {
-            let title = RichText::new(t(self.state.lang, "terminal_title"))
+            let title = RichText::new(t(self.state.lang.get(), "terminal_title"))
                 .size(32.0)
                 .color(colors::BLACK);
 

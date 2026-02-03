@@ -12,7 +12,7 @@ impl<'a> Seats<'a> {
     }
 
     pub fn show(&self, ui: &mut Ui) {
-        ui.label(t(self.state.lang, "seats_page"));
+        ui.label(t(self.state.lang.get(), "seats_page"));
 
         ui.add_space(10.0);
     }

@@ -5,13 +5,11 @@ use crate::app::{
     constants::{alphabet, colors, corners},
 };
 
-use crate::debug;
-
 use super::Home;
 
 impl<'a> Home<'a> {
     pub fn show_stations(&mut self, ui: &mut Ui) {
-        if self.state.is_stations_modal_opened() {
+        if self.state.modal.is_source() || self.state.modal.is_destination() {
             let should_close = Modal::new("pnr_counts_modal")
                 .width(880.0)
                 .open(self.ctx, |ui| {
@@ -21,14 +19,15 @@ impl<'a> Home<'a> {
                     });
                 });
 
-            if should_close {
-                self.state.close_modal();
+            if should_close || self.state.trip.is_selected() {
+                self.state.modal.close();
+                self.state.trip.selected(false);
             };
         }
     }
 
     fn render_letters(&mut self, ui: &mut Ui) {
-        let rows = if self.state.is_turkmen_lang() {
+        let rows = if self.state.lang.is_turkmen() {
             alphabet::TM
         } else {
             alphabet::RU
@@ -82,7 +81,7 @@ impl<'a> Home<'a> {
                         return;
                     };
 
-                    let is_turkmen = self.state.is_turkmen_lang();
+                    let is_turkmen = self.state.lang.is_turkmen();
                     let selected_letter = self.state.stations.get_letter();
 
                     for station in stations {
@@ -108,8 +107,15 @@ impl<'a> Home<'a> {
                             .corner_radius(corners::MEDIUM);
 
                         if ui.add(btn).clicked() {
-                            debug!("{} clicked", title);
-                            self.state.trip.set_source(station.clone());
+                            let station = station.clone();
+
+                            if self.state.modal.is_source() {
+                                self.state.trip.set_source(station);
+                            } else {
+                                self.state.trip.set_destination(station);
+                            }
+
+                            self.state.trip.selected(true);
                         }
 
                         ui.add_space(10.0);
