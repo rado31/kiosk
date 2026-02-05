@@ -2,6 +2,7 @@ use egui::{Align, Context, Frame, Layout, Stroke, Ui};
 
 use crate::app::{State, constants::colors};
 
+mod calendar;
 mod panel;
 mod stations;
 
@@ -36,6 +37,7 @@ impl<'a> Home<'a> {
 
             self.show_panel_bottom(ui);
             self.show_stations();
+            self.show_calendar();
         });
     }
 }

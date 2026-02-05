@@ -1,8 +1,6 @@
 use std::{env, fs::File};
 
-use simplelog::{
-    ColorChoice, ConfigBuilder, LevelFilter, TermLogger, TerminalMode, WriteLogger,
-};
+use simplelog::{ColorChoice, ConfigBuilder, LevelFilter, TermLogger, TerminalMode, WriteLogger};
 
 #[macro_export]
 macro_rules! debug {
@@ -30,10 +28,7 @@ macro_rules! error {
 /// - Default: info + error to file
 pub fn init() {
     let is_debug = env::var("DEBUG").map(|v| v == "1").unwrap_or(false);
-
-    let config = ConfigBuilder::new()
-        .add_filter_allow_str("kiosk")
-        .build();
+    let config = ConfigBuilder::new().add_filter_allow_str("kiosk").build();
 
     if is_debug {
         TermLogger::init(

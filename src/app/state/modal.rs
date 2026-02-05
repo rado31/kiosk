@@ -5,6 +5,8 @@ pub enum Kind {
     PnrCounts,
     Source,
     Destination,
+    OneWayTripCalendar,
+    RoundTripCalendar,
 }
 
 #[derive(Default)]
@@ -29,6 +31,14 @@ impl State {
         self.modal = Kind::Destination;
     }
 
+    pub fn one_way_trip_calendar(&mut self) {
+        self.modal = Kind::OneWayTripCalendar;
+    }
+
+    pub fn round_trip_calendar(&mut self) {
+        self.modal = Kind::RoundTripCalendar;
+    }
+
     pub fn is_pnr_counts(&self) -> bool {
         matches!(self.modal, Kind::PnrCounts)
     }
@@ -39,5 +49,13 @@ impl State {
 
     pub fn is_destination(&self) -> bool {
         matches!(self.modal, Kind::Destination)
+    }
+
+    pub fn is_one_way_trip_calendar(&self) -> bool {
+        matches!(self.modal, Kind::OneWayTripCalendar)
+    }
+
+    pub fn is_round_trip_calendar(&self) -> bool {
+        matches!(self.modal, Kind::RoundTripCalendar)
     }
 }

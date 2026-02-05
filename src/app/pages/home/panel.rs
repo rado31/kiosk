@@ -240,7 +240,7 @@ impl<'a> Home<'a> {
                 let one_way_btn = create_col_btn(ui, "one way");
 
                 if ui.add(one_way_btn).clicked() {
-                    debug!("one way clicked");
+                    self.state.modal.one_way_trip_calendar();
                 }
             });
 
@@ -249,7 +249,7 @@ impl<'a> Home<'a> {
                     let round_trip_btn = create_col_btn(ui, "round_trip");
 
                     if ui.add(round_trip_btn).clicked() {
-                        debug!("round trip clicked");
+                        self.state.modal.round_trip_calendar();
                     }
                 });
             }
