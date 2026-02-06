@@ -1,5 +1,6 @@
 use super::{services::updater::NewUpdate, views::View};
 
+pub mod calendar;
 pub mod language;
 mod modal;
 mod pnrs;
@@ -15,6 +16,7 @@ pub struct State {
     pub modal: modal::State,
     pub stations: stations::State,
     pub trip: trip::State,
+    pub calendar: calendar::State,
 }
 
 impl State {
@@ -22,6 +24,7 @@ impl State {
         self.pnr_counts = pnrs::State::default();
         self.stations = stations::State::default();
         self.trip = trip::State::default();
+        self.calendar = calendar::State::default();
     }
 
     pub fn current_view(&self) -> View {

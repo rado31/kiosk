@@ -28,7 +28,7 @@ impl<'a> Home<'a> {
 
     fn render_trip_type_toggle(&mut self, ui: &mut Ui) {
         let btn_width: f32 = ui.available_width() / 2.0;
-        const BTN_HEIGHT: f32 = 40.0;
+        const BTN_HEIGHT: f32 = 50.0;
 
         let (rect1, res1) = ui.allocate_exact_size(vec2(btn_width, BTN_HEIGHT), Sense::CLICK);
         let (rect2, res2) = ui.allocate_exact_size(vec2(btn_width, BTN_HEIGHT), Sense::CLICK);
@@ -81,7 +81,7 @@ impl<'a> Home<'a> {
             pos,
             Align2::CENTER_CENTER,
             text,
-            FontId::proportional(14.0),
+            FontId::proportional(16.0),
             color,
         );
     }
@@ -93,7 +93,7 @@ impl<'a> Home<'a> {
             self.state.pnr_counts.total()
         );
 
-        let (rect, res) = ui.allocate_exact_size(vec2(100.0, 50.0), Sense::CLICK);
+        let (rect, res) = ui.allocate_exact_size(vec2(120.0, 60.0), Sense::CLICK);
 
         ui.painter().rect(
             rect,
@@ -107,7 +107,7 @@ impl<'a> Home<'a> {
             rect.center(),
             Align2::CENTER_CENTER,
             total_pnrs,
-            FontId::proportional(14.0),
+            FontId::proportional(16.0),
             colors::BLACK,
         );
 
@@ -117,7 +117,7 @@ impl<'a> Home<'a> {
 
         if self.state.modal.is_pnr_counts() {
             let should_close = Modal::new("pnr_counts_modal")
-                .width(200.0)
+                .width(400.0)
                 .open(self.ctx, |ui| self.render_pnr_counts_modal(ui));
 
             if should_close {
@@ -128,7 +128,7 @@ impl<'a> Home<'a> {
 
     fn render_pnr_counts_modal(&mut self, ui: &mut Ui) {
         self.render_pnr_counter(ui, true);
-        ui.add_space(20.0);
+        ui.add_space(40.0);
         self.render_pnr_counter(ui, false);
     }
 
@@ -140,15 +140,15 @@ impl<'a> Home<'a> {
                 t(self.state.lang.get(), "child")
             };
 
-            ui.label(RichText::new(title).size(16.0).color(colors::BLACK));
+            ui.label(RichText::new(title).size(28.0).color(colors::BLACK));
         });
 
-        ui.add_space(20.0);
+        ui.add_space(40.0);
 
         ui.columns_const(|[col1, col2, col3]| {
             let create_btn = |text: &str| {
-                Button::new(RichText::new(text).size(28.0).color(colors::BLACK))
-                    .min_size(vec2(50.0, 50.0))
+                Button::new(RichText::new(text).size(36.0).color(colors::BLACK))
+                    .min_size(vec2(100.0, 100.0))
                     .fill(colors::WHITE)
                     .stroke(Stroke::new(1.0, colors::BORDER))
                     .corner_radius(corners::SMALL)
@@ -165,7 +165,7 @@ impl<'a> Home<'a> {
             });
 
             col2.vertical_centered(|ui| {
-                ui.add_space(10.0);
+                ui.add_space(30.0);
 
                 let count = if is_adult {
                     format!("{}", self.state.pnr_counts.adults)
@@ -173,7 +173,7 @@ impl<'a> Home<'a> {
                     format!("{}", self.state.pnr_counts.children)
                 };
 
-                ui.label(RichText::new(count).size(24.0).color(colors::BLACK));
+                ui.label(RichText::new(count).size(36.0).color(colors::BLACK));
             });
 
             col3.vertical_centered(|ui| {
@@ -189,11 +189,11 @@ impl<'a> Home<'a> {
     }
 
     pub fn show_panel_bottom(&mut self, ui: &mut Ui) {
-        const BTN_HEIGHT: f32 = 50.0;
+        const BTN_HEIGHT: f32 = 60.0;
         const PADDING: f32 = 10.0;
 
         let create_col_btn = |ui: &mut Ui, text: &str| {
-            let label = RichText::new(text).size(14.0).color(colors::BLACK);
+            let label = RichText::new(text).size(18.0).color(colors::BLACK);
             let width = ui.available_width() - PADDING;
 
             Button::new(label)
@@ -237,18 +237,26 @@ impl<'a> Home<'a> {
             });
 
             col3.vertical_centered(|ui| {
-                let one_way_btn = create_col_btn(ui, "one way");
+                let ow = self.state.calendar.get_one_way_date();
+                let ow_label = ow.format("%d.%m.%Y").to_string();
+                let one_way_btn = create_col_btn(ui, &ow_label);
 
                 if ui.add(one_way_btn).clicked() {
+                    let date = self.state.calendar.get_one_way_date();
+                    self.state.calendar.view_date(date);
                     self.state.modal.one_way_trip_calendar();
                 }
             });
 
             if !self.state.trip.is_one_way() {
                 col4.vertical_centered(|ui| {
-                    let round_trip_btn = create_col_btn(ui, "round_trip");
+                    let rt = self.state.calendar.get_round_trip_date();
+                    let rt_label = rt.format("%d.%m.%Y").to_string();
+                    let round_trip_btn = create_col_btn(ui, &rt_label);
 
                     if ui.add(round_trip_btn).clicked() {
+                        let date = self.state.calendar.get_round_trip_date();
+                        self.state.calendar.view_date(date);
                         self.state.modal.round_trip_calendar();
                     }
                 });
@@ -257,7 +265,7 @@ impl<'a> Home<'a> {
 
         ui.add_space(20.0);
 
-        let search_lbl = RichText::new("Gozle").size(14.0).color(colors::WHITE);
+        let search_lbl = RichText::new("Gozle").size(18.0).color(colors::WHITE);
         let search_btn = Button::new(search_lbl)
             .min_size(vec2(150.0, BTN_HEIGHT))
             .stroke(Stroke::new(1.0, colors::BORDER))

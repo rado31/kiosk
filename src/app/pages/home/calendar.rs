@@ -1,22 +1,35 @@
-use egui::Ui;
-
-use crate::app::components::base::Modal;
+use crate::app::components::calendar::{Calendar, CalendarKind};
 
 use super::Home;
 
 impl<'a> Home<'a> {
     pub fn show_calendar(&mut self) {
-        let calendar = self.state.modal.is_one_way_trip_calendar()
-            || self.state.modal.is_round_trip_calendar();
+        if self.state.modal.is_one_way_trip_calendar() {
+            let mut cal = Calendar::new(
+                "one_way_cal",
+                &mut self.state.calendar,
+                self.state.lang.get(),
+                self.ctx,
+                CalendarKind::OneWay,
+            );
 
-        if calendar {
-            let should_close = Modal::new("calendar").width(800.0).open(self.ctx, |ui| {
-                ui.label("calendar");
-            });
-
-            if should_close {
+            if cal.show() {
                 self.state.modal.close();
-            };
+            }
+        }
+
+        if self.state.modal.is_round_trip_calendar() {
+            let mut cal = Calendar::new(
+                "round_trip_cal",
+                &mut self.state.calendar,
+                self.state.lang.get(),
+                self.ctx,
+                CalendarKind::RoundTrip,
+            );
+
+            if cal.show() {
+                self.state.modal.close();
+            }
         }
     }
 }

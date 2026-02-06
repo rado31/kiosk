@@ -4,6 +4,7 @@ version = "0.0.1"
 edition = "2024"
 
 [dependencies]
+chrono = "0.4.43"
 ed25519-dalek = "2.2.0"
 eframe = "0.33.3"
 egui = "0.33.3"

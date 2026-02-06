@@ -25,4 +25,27 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "pnr" => "Ýolagçy",
     "adult" => "Uly adam",
     "child" => "Çaga",
+
+    // Days of week (2-letter)
+    "day_mon" => "Du",
+    "day_tue" => "Si",
+    "day_wed" => "Ça",
+    "day_thu" => "Pe",
+    "day_fri" => "An",
+    "day_sat" => "Şe",
+    "day_sun" => "Ýe",
+
+    // Month names
+    "month_1" => "Ýanwar",
+    "month_2" => "Fewral",
+    "month_3" => "Mart",
+    "month_4" => "Aprel",
+    "month_5" => "Maý",
+    "month_6" => "Iýun",
+    "month_7" => "Iýul",
+    "month_8" => "Awgust",
+    "month_9" => "Sentýabr",
+    "month_10" => "Oktýabr",
+    "month_11" => "Noýabr",
+    "month_12" => "Dekabr",
 };
