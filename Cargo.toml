@@ -1,22 +1,13 @@
-[package]
-name = "kiosk"
-version = "0.0.1"
-edition = "2024"
-
-[dependencies]
-chrono = "0.4.43"
-ed25519-dalek = "2.2.0"
-eframe = "0.33.3"
-egui = "0.33.3"
-egui_extras = { version = "0.33.3", features = ["image", "svg"] }
-log = "0.4.29"
-phf = { version = "0.11", features = ["macros"] }
-reqwest = { version = "0.13.1", features = ["blocking", "json"] }
-semver = "1.0.27"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
-simplelog = "0.12.2"
-thiserror = "2.0.18"
+[workspace]
+resolver = "3"
+members = [
+    "crates/core",
+    "crates/api",
+    "crates/ui",
+    "crates/cashcode",
+    "crates/printer",
+    "crates/database",
+]
 
 [profile.release]
 opt-level = 3
