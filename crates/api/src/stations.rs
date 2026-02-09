@@ -1,4 +1,4 @@
-use kiosk_core::Result;
+use core::Result;
 use serde::Deserialize;
 
 use crate::{client::HttpClient, response::ApiResponse};
@@ -28,10 +28,10 @@ pub fn fetch_all() -> Result<Vec<Station>> {
     }
 
     if let Some(e) = res.error {
-        return Err(kiosk_core::AppError::custom(format!(
+        return Err(core::AppError::custom(format!(
             "API error of `GET /stations`. {e}"
         )));
     }
 
-    Err(kiosk_core::AppError::custom("Unknown API error"))
+    Err(core::AppError::custom("Unknown API error"))
 }

@@ -1,6 +1,6 @@
 use std::sync::mpsc::Receiver;
 
-use kiosk_api::stations::Station;
+use api::stations::Station;
 
 pub struct State {
     is_fetching: bool,

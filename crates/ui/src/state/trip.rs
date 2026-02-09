@@ -1,4 +1,4 @@
-use kiosk_api::stations::Station;
+use api::stations::Station;
 
 #[derive(Default, PartialEq)]
 pub enum TripKind {

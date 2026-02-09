@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use kiosk_core::config;
+use core::config;
 use ureq::Agent;
 
 pub struct HttpClient {

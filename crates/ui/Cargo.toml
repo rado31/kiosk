@@ -1,5 +1,5 @@
 [package]
-name = "kiosk-ui"
+name = "ui"
 version = "0.0.1"
 edition = "2024"
 
@@ -8,8 +8,8 @@ name = "kiosk"
 path = "src/main.rs"
 
 [dependencies]
-kiosk-core = { path = "../core" }
-kiosk-api = { path = "../api" }
+core = { path = "../core" }
+api = { path = "../api" }
 chrono = "0.4.43"
 log = "0.4.29"
 eframe = "0.33.3"

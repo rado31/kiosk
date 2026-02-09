@@ -9,7 +9,7 @@ use std::{
 use std::os::unix::fs::PermissionsExt;
 
 use ed25519_dalek::{PUBLIC_KEY_LENGTH, Signature, Verifier, VerifyingKey};
-use kiosk_core::{AppError, Result, base64};
+use core::{AppError, Result, base64};
 use serde::Deserialize;
 
 const PUBLIC_KEY: &[u8; PUBLIC_KEY_LENGTH] = include_bytes!("../../../keys/public.key");
@@ -33,7 +33,7 @@ pub struct DownloadProgress {
 pub fn check() -> Result<Option<UpdateInfo>> {
     let agent = ureq::Agent::new_with_defaults();
     let mut body = agent
-        .get(kiosk_core::config::UPDATE_URL)
+        .get(core::config::UPDATE_URL)
         .call()?
         .into_body();
 

@@ -9,8 +9,8 @@ mod theme;
 mod views;
 
 fn main() -> eframe::Result {
-    kiosk_core::logger::init();
-    kiosk_api::updater::cleanup_old_binary();
+    core::logger::init();
+    api::updater::cleanup_old_binary();
 
     // TODO: make it fullscreen on production
     let options = NativeOptions {

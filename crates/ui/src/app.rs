@@ -42,30 +42,30 @@ impl State {
     }
 
     pub fn poll_update(&mut self) {
-        if let Some(receiver) = &self.update.receiver {
-            while let Ok(msg) = receiver.try_recv() {
-                match msg {
-                    UpdateMessage::Progress(progress) => {
-                        self.update.status = UpdateStatus::Downloading(progress);
-                    }
-                    UpdateMessage::Downloaded(path) => {
-                        self.update.receiver = None;
-                        self.update.status = UpdateStatus::Idle;
+        let Some(receiver) = self.update.receiver.take() else {
+            return;
+        };
 
-                        if let Err(e) = kiosk_api::updater::install_and_restart(&path) {
-                            log::error!("{e}");
-                        }
-
-                        break;
+        while let Ok(msg) = receiver.try_recv() {
+            match msg {
+                UpdateMessage::Progress(progress) => {
+                    self.update.status = UpdateStatus::Downloading(progress);
+                }
+                UpdateMessage::Downloaded(path) => {
+                    self.update.status = UpdateStatus::Idle;
+                    if let Err(e) = api::updater::install_and_restart(&path) {
+                        log::error!("{e}");
                     }
-                    UpdateMessage::Done => {
-                        self.update.receiver = None;
-                        self.update.status = UpdateStatus::Idle;
-                        break;
-                    }
+                    return;
+                }
+                UpdateMessage::Done => {
+                    self.update.status = UpdateStatus::Idle;
+                    return;
                 }
             }
         }
+
+        self.update.receiver = Some(receiver);
     }
 
     #[allow(dead_code)]
@@ -77,47 +77,46 @@ impl State {
         self.update.status = UpdateStatus::Checking;
 
         thread::spawn(move || {
-            let opt_info = match kiosk_api::updater::check() {
-                Ok(v) => v,
-                Err(e) => {
-                    log::error!("Check new update. {e}");
+            let info = match api::updater::check() {
+                Ok(Some(info)) => info,
+                Ok(None) => {
                     tx.send(UpdateMessage::Done).ok();
+                    ctx.request_repaint();
+                    return;
+                }
+                Err(e) => {
+                    log::error!("Check new update: {e}");
+                    tx.send(UpdateMessage::Done).ok();
+                    ctx.request_repaint();
                     return;
                 }
             };
 
-            if let Some(info) = opt_info {
-                let tx_progress = tx.clone();
-                let ctx_progress = ctx.clone();
-                let version = info.version.clone();
+            let version = info.version.clone();
+            let tx_progress = tx.clone();
+            let ctx_progress = ctx.clone();
 
-                let res = kiosk_api::updater::download(&info, |downloaded, total| {
-                    tx_progress
-                        .send(UpdateMessage::Progress(DownloadProgress {
-                            downloaded,
-                            total,
-                            version: version.clone(),
-                        }))
-                        .ok();
+            let result = api::updater::download(&info, |downloaded, total| {
+                tx_progress
+                    .send(UpdateMessage::Progress(DownloadProgress {
+                        downloaded,
+                        total,
+                        version: version.clone(),
+                    }))
+                    .ok();
 
-                    ctx_progress.request_repaint();
-                });
+                ctx_progress.request_repaint();
+            });
 
-                match res {
-                    Ok(path) => {
-                        tx.send(UpdateMessage::Downloaded(path)).ok();
-                    }
-                    Err(e) => {
-                        log::error!("Download update. {e}");
-                        tx.send(UpdateMessage::Done).ok();
-                    }
-                };
-
-                ctx.request_repaint();
-            } else {
-                tx.send(UpdateMessage::Done).ok();
-                ctx.request_repaint();
+            match result {
+                Ok(path) => tx.send(UpdateMessage::Downloaded(path)).ok(),
+                Err(e) => {
+                    log::error!("Download update: {e}");
+                    tx.send(UpdateMessage::Done).ok()
+                }
             };
+
+            ctx.request_repaint();
         });
     }
 
@@ -128,29 +127,32 @@ impl State {
             self.stations.start_fetching(rx);
 
             thread::spawn(move || {
-                match kiosk_api::stations::fetch_all() {
-                    Ok(stations) => {
-                        tx.send(Some(stations)).ok();
-                    }
+                let result = match api::stations::fetch_all() {
+                    Ok(stations) => Some(stations),
                     Err(e) => {
-                        log::error!("Fetch stations. {e}");
-                        tx.send(None).ok();
+                        log::error!("Fetch stations: {e}");
+                        None
                     }
-                }
+                };
+
+                tx.send(result).ok();
             });
         }
 
-        if let Some(rx) = self.stations.take_receiver() {
-            let mut received = false;
+        let Some(rx) = self.stations.take_receiver() else {
+            return;
+        };
 
-            while let Ok(data) = rx.try_recv() {
-                received = true;
+        match rx.try_recv() {
+            Ok(data) => {
                 self.stations.set_result(data);
                 ctx.request_repaint();
             }
-
-            if !received {
+            Err(mpsc::TryRecvError::Empty) => {
                 self.stations.start_fetching(rx);
+            }
+            Err(mpsc::TryRecvError::Disconnected) => {
+                self.stations.set_result(None);
             }
         }
     }

@@ -1,5 +1,5 @@
 dev:
-	@DEBUG=1 cargo run -p kiosk-ui
+	@DEBUG=1 cargo run -p ui
 check:
 	@cargo check
 build:

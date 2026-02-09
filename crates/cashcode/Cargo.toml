@@ -1,5 +1,5 @@
 [package]
-name = "kiosk-cashcode"
+name = "cashcode"
 version = "0.0.1"
 edition = "2024"
 

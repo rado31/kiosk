@@ -1,10 +1,10 @@
 [package]
-name = "kiosk-api"
+name = "api"
 version = "0.0.1"
 edition = "2024"
 
 [dependencies]
-kiosk-core = { path = "../core" }
+core = { path = "../core" }
 ed25519-dalek = "2.2.0"
 semver = "1.0.27"
 serde = { version = "1.0.228", features = ["derive"] }
