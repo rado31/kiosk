@@ -2,6 +2,7 @@ use chrono::{Datelike, FixedOffset, NaiveDate, Utc};
 
 pub fn today() -> NaiveDate {
     let tmt = FixedOffset::east_opt(5 * 3600).unwrap();
+
     Utc::now().with_timezone(&tmt).date_naive()
 }
 
@@ -32,6 +33,7 @@ pub struct State {
 impl Default for State {
     fn default() -> Self {
         let t = today();
+
         Self {
             viewed_year: t.year(),
             viewed_month: t.month(),

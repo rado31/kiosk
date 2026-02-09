@@ -1,5 +1,5 @@
 use chrono::{Datelike, NaiveDate};
-use egui::{Align2, Context, FontId, Sense, Stroke, StrokeKind, Ui, vec2};
+use egui::{Align2, Context, FontFamily, FontId, Sense, Stroke, StrokeKind, Ui, vec2};
 
 use crate::{
     components::modal::Modal,
@@ -128,7 +128,7 @@ impl<'a> Calendar<'a> {
                 label_rect.center(),
                 Align2::CENTER_CENTER,
                 label,
-                FontId::proportional(32.0),
+                FontId::new(32.0, FontFamily::Name("bold".into())),
                 colors::FG,
             );
 
@@ -182,7 +182,6 @@ impl<'a> Calendar<'a> {
         let min_date = self.min_selectable_date(today);
         let year = self.state.viewed_year;
         let month = self.state.viewed_month;
-
         let days_in_current = calendar::days_in_month(year, month);
         let first_date = NaiveDate::from_ymd_opt(year, month, 1).unwrap();
         let first_weekday = calendar::weekday_index(first_date);
@@ -194,11 +193,9 @@ impl<'a> Calendar<'a> {
         };
 
         let days_in_prev = calendar::days_in_month(prev_year, prev_month);
-
         let cell_size = ui.available_width() / 7.0;
         let cell_height = 80.0;
         let circle_radius = 36.0;
-
         let mut date_selected = false;
 
         for row in 0..6 {

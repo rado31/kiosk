@@ -1,6 +1,6 @@
 use egui::{
-    Align2, Button, Color32, FontId, Frame, Pos2, Rect, RichText, Sense, Stroke, StrokeKind, Ui,
-    pos2, vec2,
+    Align2, Button, Color32, FontFamily, FontId, Frame, Pos2, Rect, RichText, Sense, Stroke,
+    StrokeKind, Ui, pos2, vec2,
 };
 
 use crate::{
@@ -117,7 +117,12 @@ fn render_pnr_counter(state: &mut State, ui: &mut Ui, is_adult: bool) {
             t(&state.lang, "child")
         };
 
-        ui.label(RichText::new(title).size(28.0).color(colors::BLACK));
+        ui.label(
+            RichText::new(title)
+                .size(28.0)
+                .family(FontFamily::Name("bold".into()))
+                .color(colors::BLACK),
+        );
     });
 
     ui.add_space(40.0);

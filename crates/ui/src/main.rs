@@ -1,5 +1,5 @@
 use eframe::NativeOptions;
-use egui::{ViewportBuilder, vec2};
+use egui::{FontData, FontDefinitions, FontFamily, ViewportBuilder, vec2};
 
 mod app;
 mod components;
@@ -28,6 +28,31 @@ fn main() -> eframe::Result {
         options,
         Box::new(|cc| {
             egui_extras::install_image_loaders(&cc.egui_ctx);
+
+            let mut fonts = FontDefinitions::default();
+
+            fonts.font_data.insert(
+                "Inter".to_owned(),
+                FontData::from_static(include_bytes!("assets/Inter.ttf")).into(),
+            );
+
+            fonts.font_data.insert(
+                "InterBold".to_owned(),
+                FontData::from_static(include_bytes!("assets/InterBold.ttf")).into(),
+            );
+
+            fonts
+                .families
+                .get_mut(&FontFamily::Proportional)
+                .unwrap()
+                .insert(0, "Inter".to_owned());
+
+            fonts.families.insert(
+                FontFamily::Name("bold".into()),
+                vec!["InterBold".to_owned()],
+            );
+
+            cc.egui_ctx.set_fonts(fonts);
 
             Ok(Box::<state::State>::default())
         }),

@@ -50,6 +50,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "month_12" => "Декабрь",
 
     // Stations
+    "most_popular_places" => "Самые популярные места",
+    "find_by_letters" => "Вы также можете найти по буквам",
     "from" => "Откуда",
     "to" => "Куда",
 };

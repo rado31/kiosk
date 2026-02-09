@@ -1,6 +1,6 @@
 use egui::{
-    Color32, Image, ImageSource, RichText, Sense, Stroke, StrokeKind, Ui, UiBuilder, include_image,
-    vec2,
+    Color32, FontFamily, Image, ImageSource, RichText, Sense, Stroke, StrokeKind, Ui, UiBuilder,
+    include_image, vec2,
 };
 
 use crate::{
@@ -14,6 +14,7 @@ pub fn show(state: &mut State, ui: &mut Ui) {
     ui.vertical_centered(|ui| {
         let title = RichText::new(t(&state.lang, "terminal_title"))
             .size(32.0)
+            .family(FontFamily::Name("bold".into()))
             .color(colors::BLACK);
 
         ui.label(title)

@@ -50,6 +50,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "month_12" => "Dekabr",
 
     // Stations
+    "most_popular_places" => "Iň meşhur ýerler",
+    "find_by_letters" => "Harplar boýunça hem tapyp bilersiňiz",
     "from" => "Nireden",
     "to" => "Nirä",
 };
