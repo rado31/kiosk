@@ -20,9 +20,11 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // Trip
     "one_way" => "Bir tarap",
     "round_trip" => "Gidiş we gaýdyş",
+    "search" => "Gözle",
 
     // Passenger
-    "pnr" => "Ýolagçy",
+    "pnrs_count" => "Ýolagçylaryň sany",
+    "pnrs_max" => "Ýolagçylaryň iň köp sany 9",
     "adult" => "Uly adam",
     "child" => "Çaga",
 

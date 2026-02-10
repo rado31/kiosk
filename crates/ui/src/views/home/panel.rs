@@ -68,9 +68,13 @@ fn draw_centered_text(ui: &Ui, pos: Pos2, color: Color32, text: &str) {
 }
 
 pub fn top_right(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
-    let total_pnrs = format!("{}  {}", t(&state.lang, "pnr"), state.passengers.total());
+    let total_pnrs = format!(
+        "{}  {}",
+        t(&state.lang, "pnrs_count"),
+        state.passengers.total()
+    );
 
-    let (rect, res) = ui.allocate_exact_size(vec2(120.0, 60.0), Sense::CLICK);
+    let (rect, res) = ui.allocate_exact_size(vec2(250.0, 60.0), Sense::CLICK);
 
     ui.painter().rect(
         rect,
@@ -106,7 +110,15 @@ pub fn top_right(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
 fn render_pnr_counts_modal(state: &mut State, ui: &mut Ui) {
     render_pnr_counter(state, ui, true);
     ui.add_space(40.0);
+
     render_pnr_counter(state, ui, false);
+    ui.add_space(40.0);
+
+    let desc = RichText::new(t(&state.lang, "pnrs_max"))
+        .size(20.0)
+        .color(colors::BLACK);
+
+    ui.vertical_centered(|ui| ui.label(desc));
 }
 
 fn render_pnr_counter(state: &mut State, ui: &mut Ui, is_adult: bool) {
@@ -255,7 +267,10 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
 
     ui.add_space(20.0);
 
-    let search_lbl = RichText::new("Gozle").size(18.0).color(colors::WHITE);
+    let search_lbl = RichText::new(t(&state.lang, "search"))
+        .size(18.0)
+        .color(colors::WHITE);
+
     let search_btn = Button::new(search_lbl)
         .min_size(vec2(150.0, BTN_HEIGHT))
         .stroke(Stroke::new(1.0, colors::BORDER))

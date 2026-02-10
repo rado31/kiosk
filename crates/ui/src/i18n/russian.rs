@@ -20,9 +20,11 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // Trip
     "one_way" => "В одну сторону",
     "round_trip" => "Туда и Обратно",
+    "search" => "Поиск",
 
     // Passenger
-    "pnr" => "Пассажир",
+    "pnrs_count" => "Количество пассажиров",
+    "pnrs_max" => "Максимальное количество пассажиров 9",
     "adult" => "Взрослый",
     "child" => "Ребёнок",
 
