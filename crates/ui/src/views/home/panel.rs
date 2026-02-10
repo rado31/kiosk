@@ -267,18 +267,27 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
 
     ui.add_space(20.0);
 
+    let is_cooldown = state.trip.search_on_cooldown();
+
+    let (bg, fg) = if is_cooldown {
+        (colors::BG_5, colors::FG_DISABLED)
+    } else {
+        (colors::BTN_PRIMARY_BG, colors::WHITE)
+    };
+
     let search_lbl = RichText::new(t(&state.lang, "search"))
         .size(18.0)
-        .color(colors::WHITE);
+        .color(fg);
 
     let search_btn = Button::new(search_lbl)
         .min_size(vec2(150.0, BTN_HEIGHT))
         .stroke(Stroke::new(1.0, colors::BORDER))
-        .fill(colors::BTN_PRIMARY_BG)
+        .fill(bg)
         .corner_radius(corners::MEDIUM);
 
     ui.vertical_centered(|ui| {
-        if ui.add(search_btn).clicked() {
+        if ui.add(search_btn).clicked() && !is_cooldown {
+            state.trip.mark_searched();
             log::debug!("search button clicked");
         }
     });
