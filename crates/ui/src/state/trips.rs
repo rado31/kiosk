@@ -16,7 +16,7 @@ pub struct State {
     pub source: Option<Station>,
     pub destination: Option<Station>,
     pub selected: bool,
-    pub has_error: bool,
+    pub outbound_has_error: bool,
     pub inbound_has_error: bool,
     searched_at: Option<Instant>,
     is_fetching: bool,
@@ -32,7 +32,7 @@ impl Default for State {
             source: None,
             destination: None,
             selected: false,
-            has_error: false,
+            outbound_has_error: false,
             inbound_has_error: false,
             searched_at: None,
             is_fetching: false,
@@ -75,7 +75,7 @@ impl State {
 
     pub fn start_fetching(&mut self, receiver: Receiver<TripResult>) {
         self.is_fetching = true;
-        self.has_error = false;
+        self.outbound_has_error = false;
         self.inbound_has_error = false;
         self.outbound_data = None;
         self.inbound_data = None;
@@ -87,7 +87,7 @@ impl State {
     }
 
     pub fn set_result(&mut self, outbound: Option<Vec<Trip>>, inbound: Option<Vec<Trip>>) {
-        self.has_error = outbound.is_none();
+        self.outbound_has_error = outbound.is_none();
         self.inbound_has_error = inbound.is_none() && self.kind == TripKind::Round;
         self.outbound_data = outbound;
         self.inbound_data = inbound;

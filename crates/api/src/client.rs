@@ -11,7 +11,7 @@ pub struct HttpClient {
 impl HttpClient {
     pub fn new() -> Self {
         let agent = Agent::config_builder()
-            .timeout_global(Some(Duration::from_secs(30)))
+            .timeout_global(Some(Duration::from_secs(10)))
             .build()
             .into();
 

@@ -12,6 +12,26 @@ use crate::{
     views::View,
 };
 
+fn poll_trips(state: &mut State, ctx: &egui::Context) {
+    let Some(rx) = state.trips.take_receiver() else {
+        return;
+    };
+
+    match rx.try_recv() {
+        Ok((outbound, inbound)) => {
+            state.trips.set_result(outbound, inbound);
+            ctx.request_repaint();
+        }
+        Err(mpsc::TryRecvError::Empty) => {
+            state.trips.start_fetching(rx);
+            ctx.request_repaint();
+        }
+        Err(mpsc::TryRecvError::Disconnected) => {
+            state.trips.set_result(None, None);
+        }
+    }
+}
+
 pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
     poll_trips(state, ctx);
 
@@ -62,7 +82,7 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
             state,
             ui,
             &format!("{source_name} - {dest_name}"),
-            state.trips.has_error,
+            state.trips.outbound_has_error,
             state.trips.get_outbound(),
         );
 
@@ -99,6 +119,7 @@ fn render_trip_section(
         let msg = RichText::new(t(&state.lang, "trips_fetch_error"))
             .size(22.0)
             .color(colors::ERROR);
+
         ui.vertical_centered(|ui| ui.label(msg));
         return;
     }
@@ -111,34 +132,16 @@ fn render_trip_section(
         let msg = RichText::new(t(&state.lang, "trips_not_found"))
             .size(22.0)
             .color(colors::FG_MUTED);
+
         ui.vertical_centered(|ui| ui.label(msg));
         return;
     }
 
     let trips = trips.clone();
+
     for trip in &trips {
         render_trip_card(state, ui, trip);
         ui.add_space(12.0);
-    }
-}
-
-fn poll_trips(state: &mut State, ctx: &egui::Context) {
-    let Some(rx) = state.trips.take_receiver() else {
-        return;
-    };
-
-    match rx.try_recv() {
-        Ok((outbound, inbound)) => {
-            state.trips.set_result(outbound, inbound);
-            ctx.request_repaint();
-        }
-        Err(mpsc::TryRecvError::Empty) => {
-            state.trips.start_fetching(rx);
-            ctx.request_repaint();
-        }
-        Err(mpsc::TryRecvError::Disconnected) => {
-            state.trips.set_result(None, None);
-        }
     }
 }
 
