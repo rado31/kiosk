@@ -8,8 +8,8 @@ use std::{
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 
-use ed25519_dalek::{PUBLIC_KEY_LENGTH, Signature, Verifier, VerifyingKey};
 use core::{AppError, Result, base64};
+use ed25519_dalek::{PUBLIC_KEY_LENGTH, Signature, Verifier, VerifyingKey};
 use serde::Deserialize;
 
 const PUBLIC_KEY: &[u8; PUBLIC_KEY_LENGTH] = include_bytes!("../../../keys/public.key");
@@ -32,10 +32,7 @@ pub struct DownloadProgress {
 /// Returns `Ok(Some(UpdateInfo))` if a newer version exists, `Ok(None)` if current is latest.
 pub fn check() -> Result<Option<UpdateInfo>> {
     let agent = ureq::Agent::new_with_defaults();
-    let mut body = agent
-        .get(core::config::UPDATE_URL)
-        .call()?
-        .into_body();
+    let mut body = agent.get(core::config::UPDATE_URL).call()?.into_body();
 
     let info: UpdateInfo = body.read_json()?;
     let current = semver::Version::parse(env!("CARGO_PKG_VERSION"))?;

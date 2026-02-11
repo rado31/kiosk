@@ -57,7 +57,7 @@ impl<'a> Calendar<'a> {
 
     fn selected_date(&self) -> NaiveDate {
         match self.kind {
-            CalendarKind::OneWay => self.state.one_way_date(),
+            CalendarKind::OneWay => self.state.one_way_date,
             CalendarKind::RoundTrip => self.state.round_trip_date,
         }
     }
@@ -72,14 +72,14 @@ impl<'a> Calendar<'a> {
     fn min_selectable_date(&self, today: NaiveDate) -> NaiveDate {
         match self.kind {
             CalendarKind::OneWay => today,
-            CalendarKind::RoundTrip => self.state.one_way_date().succ_opt().unwrap(),
+            CalendarKind::RoundTrip => self.state.one_way_date.succ_opt().unwrap(),
         }
     }
 
     fn render_header(&mut self, ui: &mut Ui, today: NaiveDate) {
         let earliest = match self.kind {
             CalendarKind::OneWay => today,
-            CalendarKind::RoundTrip => self.state.one_way_date(),
+            CalendarKind::RoundTrip => self.state.one_way_date,
         };
 
         let can_go_prev = self.state.viewed_year > earliest.year()

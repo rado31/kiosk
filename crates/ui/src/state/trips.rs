@@ -2,6 +2,8 @@ use std::{sync::mpsc::Receiver, time::Instant};
 
 use api::{stations::Station, trips::Trip};
 
+type TripResult = (Option<Vec<Trip>>, Option<Vec<Trip>>);
+
 #[derive(Default, PartialEq)]
 pub enum TripKind {
     #[default]
@@ -15,10 +17,12 @@ pub struct State {
     pub destination: Option<Station>,
     pub selected: bool,
     pub has_error: bool,
+    pub inbound_has_error: bool,
     searched_at: Option<Instant>,
     is_fetching: bool,
-    data: Option<Vec<Trip>>,
-    receiver: Option<Receiver<Option<Vec<Trip>>>>,
+    outbound_data: Option<Vec<Trip>>,
+    inbound_data: Option<Vec<Trip>>,
+    receiver: Option<Receiver<TripResult>>,
 }
 
 impl Default for State {
@@ -29,9 +33,11 @@ impl Default for State {
             destination: None,
             selected: false,
             has_error: false,
+            inbound_has_error: false,
             searched_at: None,
             is_fetching: false,
-            data: None,
+            outbound_data: None,
+            inbound_data: None,
             receiver: None,
         }
     }
@@ -55,28 +61,36 @@ impl State {
         self.destination.as_ref()
     }
 
-    pub fn get_trips(&self) -> Option<&Vec<Trip>> {
-        self.data.as_ref()
+    pub fn get_outbound(&self) -> Option<&Vec<Trip>> {
+        self.outbound_data.as_ref()
+    }
+
+    pub fn get_inbound(&self) -> Option<&Vec<Trip>> {
+        self.inbound_data.as_ref()
     }
 
     pub fn is_fetching(&self) -> bool {
         self.is_fetching
     }
 
-    pub fn start_fetching(&mut self, receiver: Receiver<Option<Vec<Trip>>>) {
+    pub fn start_fetching(&mut self, receiver: Receiver<TripResult>) {
         self.is_fetching = true;
         self.has_error = false;
-        self.data = None;
+        self.inbound_has_error = false;
+        self.outbound_data = None;
+        self.inbound_data = None;
         self.receiver = Some(receiver);
     }
 
-    pub fn take_receiver(&mut self) -> Option<Receiver<Option<Vec<Trip>>>> {
+    pub fn take_receiver(&mut self) -> Option<Receiver<TripResult>> {
         self.receiver.take()
     }
 
-    pub fn set_result(&mut self, data: Option<Vec<Trip>>) {
-        self.has_error = data.is_none();
-        self.data = data;
+    pub fn set_result(&mut self, outbound: Option<Vec<Trip>>, inbound: Option<Vec<Trip>>) {
+        self.has_error = outbound.is_none();
+        self.inbound_has_error = inbound.is_none() && self.kind == TripKind::Round;
+        self.outbound_data = outbound;
+        self.inbound_data = inbound;
         self.is_fetching = false;
         self.receiver = None;
     }

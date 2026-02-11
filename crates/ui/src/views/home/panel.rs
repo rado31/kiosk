@@ -242,12 +242,12 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         });
 
         col3.vertical_centered(|ui| {
-            let ow = state.calendar.one_way_date();
+            let ow = state.calendar.one_way_date;
             let ow_label = ow.format("%d.%m.%Y").to_string();
             let one_way_btn = create_col_btn(ui, &ow_label);
 
             if ui.add(one_way_btn).clicked() {
-                let date = state.calendar.one_way_date();
+                let date = state.calendar.one_way_date;
                 state.calendar.view_date(date);
                 state.modal = ModalKind::OneWayCalendar;
             }
@@ -290,41 +290,71 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         if ui.add(search_btn).clicked() && !is_cooldown {
             state.trips.mark_searched();
 
+            // TODO: notify error if source or destination is empty
             let Some(source) = &state.trips.source else {
                 return;
             };
+
             let Some(destination) = &state.trips.destination else {
                 return;
             };
 
             let source_id = source.id;
             let destination_id = destination.id;
-            let date = state.calendar.one_way_date().format("%Y-%m-%d").to_string();
+            let date = state.calendar.one_way_date.format("%Y-%m-%d").to_string();
             let adult = state.passengers.adults as u32;
             let child = state.passengers.children as u32;
+            let is_round = state.trips.kind == TripKind::Round;
+            let inbound_date = if is_round {
+                Some(
+                    state
+                        .calendar
+                        .round_trip_date
+                        .format("%Y-%m-%d")
+                        .to_string(),
+                )
+            } else {
+                None
+            };
 
             let (tx, rx) = mpsc::channel();
             state.trips.start_fetching(rx);
             state.go_to(View::Trips);
 
             thread::spawn(move || {
-                let params = api::trips::TripsParams {
+                let outbound = match api::trips::fetch(api::trips::TripsParams {
                     source: source_id,
                     destination: destination_id,
                     date: &date,
                     adult,
                     child,
-                };
-
-                let result = match api::trips::fetch(params) {
+                }) {
                     Ok(trips) => Some(trips),
                     Err(e) => {
-                        log::error!("Error on `GET /trips`. {e}");
+                        log::error!("Error on `GET /trips` (outbound). {e}");
                         None
                     }
                 };
 
-                tx.send(result).ok();
+                let inbound = if let Some(rd) = &inbound_date {
+                    match api::trips::fetch(api::trips::TripsParams {
+                        source: destination_id,
+                        destination: source_id,
+                        date: rd,
+                        adult,
+                        child,
+                    }) {
+                        Ok(trips) => Some(trips),
+                        Err(e) => {
+                            log::error!("Error on `GET /trips` (inbound). {e}");
+                            None
+                        }
+                    }
+                } else {
+                    None
+                };
+
+                tx.send((outbound, inbound)).ok();
             });
         }
     });

@@ -7,7 +7,7 @@ use egui::{
 
 use crate::{
     i18n::t,
-    state::State,
+    state::{State, trips::TripKind},
     theme::{colors, corners},
     views::View,
 };
@@ -40,68 +40,86 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
     ui.add_space(20.0);
 
     if state.trips.is_fetching() {
-        show_centered(ui, |ui| {
-            ui.add(Spinner::new().size(48.0));
-        });
-
+        ui.centered_and_justified(|ui| ui.add(Spinner::new().size(50.0).color(colors::PRIMARY)));
         return;
     }
 
-    if state.trips.has_error {
-        show_centered(ui, |ui| {
-            let msg = RichText::new(t(&state.lang, "trips_fetch_error"))
-                .size(22.0)
-                .color(colors::ERROR);
-            ui.label(msg);
-        });
-
-        return;
-    }
-
-    let Some(trips) = state.trips.get_trips() else {
-        return;
-    };
-
-    if trips.is_empty() {
-        show_centered(ui, |ui| {
-            let msg = RichText::new(t(&state.lang, "trips_not_found"))
-                .size(22.0)
-                .color(colors::FG_MUTED);
-            ui.label(msg);
-        });
-
-        return;
-    }
-
-    let trips = trips.clone();
-
+    let is_round = state.trips.kind == TripKind::Round;
     let is_turkmen = state.lang.is_turkmen();
-    let source = state
+
+    let source_name = state
         .trips
         .get_source()
         .map_or("", |s| s.get_title(is_turkmen));
 
-    let destination = state
+    let dest_name = state
         .trips
         .get_destination()
         .map_or("", |s| s.get_title(is_turkmen));
 
-    let title_str = format!("{source} - {destination}");
+    ScrollArea::vertical().show(ui, |ui| {
+        render_trip_section(
+            state,
+            ui,
+            &format!("{source_name} - {dest_name}"),
+            state.trips.has_error,
+            state.trips.get_outbound(),
+        );
+
+        if is_round {
+            ui.add_space(40.0);
+
+            render_trip_section(
+                state,
+                ui,
+                &format!("{dest_name} - {source_name}"),
+                state.trips.inbound_has_error,
+                state.trips.get_inbound(),
+            );
+        }
+    });
+}
+
+fn render_trip_section(
+    state: &State,
+    ui: &mut Ui,
+    title_str: &str,
+    has_error: bool,
+    trips: Option<&Vec<api::trips::Trip>>,
+) {
     let title = RichText::new(title_str)
         .size(28.0)
         .family(FontFamily::Name("bold".into()))
         .color(colors::BLACK);
 
     ui.vertical_centered(|ui| ui.label(title));
-    ui.add_space(40.0);
+    ui.add_space(20.0);
 
-    // Cards
-    ScrollArea::vertical().show(ui, |ui| {
-        for trip in &trips {
-            render_trip_card(state, ui, trip);
-            ui.add_space(12.0);
-        }
-    });
+    if has_error {
+        let msg = RichText::new(t(&state.lang, "trips_fetch_error"))
+            .size(22.0)
+            .color(colors::ERROR);
+        ui.vertical_centered(|ui| ui.label(msg));
+        return;
+    }
+
+    let Some(trips) = trips else {
+        return;
+    };
+
+    if trips.is_empty() {
+        let msg = RichText::new(t(&state.lang, "trips_not_found"))
+            .size(22.0)
+            .color(colors::FG_MUTED);
+        ui.vertical_centered(|ui| ui.label(msg));
+        return;
+    }
+
+    let trips = trips.clone();
+    for trip in &trips {
+        render_trip_card(state, ui, trip);
+        ui.add_space(12.0);
+    }
 }
 
 fn poll_trips(state: &mut State, ctx: &egui::Context) {
@@ -110,30 +128,18 @@ fn poll_trips(state: &mut State, ctx: &egui::Context) {
     };
 
     match rx.try_recv() {
-        Ok(data) => {
-            state.trips.set_result(data);
+        Ok((outbound, inbound)) => {
+            state.trips.set_result(outbound, inbound);
             ctx.request_repaint();
         }
         Err(mpsc::TryRecvError::Empty) => {
             state.trips.start_fetching(rx);
+            ctx.request_repaint();
         }
         Err(mpsc::TryRecvError::Disconnected) => {
-            state.trips.set_result(None);
+            state.trips.set_result(None, None);
         }
     }
-}
-
-fn show_centered(ui: &mut Ui, content: impl FnOnce(&mut Ui)) {
-    ui.allocate_ui_with_layout(
-        vec2(ui.available_width(), ui.available_height()),
-        Layout::centered_and_justified(egui::Direction::TopDown),
-        |ui| {
-            ui.with_layout(Layout::top_down(Align::Center), |ui| {
-                ui.add_space(ui.available_height() / 3.0);
-                content(ui);
-            });
-        },
-    );
 }
 
 /// Parses `2026-02-20T20:30:00+05:00` into `("20:30", "20.02.2026")`.

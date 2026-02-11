@@ -26,7 +26,7 @@ pub fn days_in_month(year: i32, month: u32) -> u32 {
 pub struct State {
     pub viewed_year: i32,
     pub viewed_month: u32,
-    one_way_date: NaiveDate,
+    pub one_way_date: NaiveDate,
     pub round_trip_date: NaiveDate,
 }
 
@@ -69,10 +69,6 @@ impl State {
         }
 
         self.viewed_month += 1;
-    }
-
-    pub fn one_way_date(&self) -> NaiveDate {
-        self.one_way_date
     }
 
     pub fn set_one_way_date(&mut self, date: NaiveDate) {
