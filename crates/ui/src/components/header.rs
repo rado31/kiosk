@@ -3,7 +3,7 @@ use egui::{
     Ui, include_image, vec2,
 };
 
-use crate::{state::State, theme::colors};
+use crate::{state::State, theme::colors, views::View};
 
 const VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -59,7 +59,7 @@ fn render_right(state: &mut State, ui: &mut Ui) {
         .fill(colors::BTN_BG_LIGHT)
         .corner_radius(12);
 
-    if ui.add(refresh_btn).clicked() {
+    if state.current_view() == View::Home && ui.add(refresh_btn).clicked() {
         state.reset();
     }
 

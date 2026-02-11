@@ -54,6 +54,7 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
                 .color(colors::ERROR);
             ui.label(msg);
         });
+
         return;
     }
 
@@ -68,6 +69,7 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
                 .color(colors::FG_MUTED);
             ui.label(msg);
         });
+
         return;
     }
 
