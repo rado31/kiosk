@@ -15,9 +15,9 @@ fn main() -> eframe::Result {
     // TODO: make it fullscreen on production
     let options = NativeOptions {
         viewport: ViewportBuilder {
-            inner_size: Some(vec2(1080.0, 1000.0)),
+            // inner_size: Some(vec2(1080.0, 1000.0)),
             resizable: Some(false),
-            // fullscreen: Some(true),
+            fullscreen: Some(true),
             ..Default::default()
         },
         ..Default::default()

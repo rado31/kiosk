@@ -84,7 +84,7 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
         .get_destination()
         .map_or("", |s| s.get_title(is_turkmen));
 
-    let title_str = format!("source} - {destination}");
+    let title_str = format!("{source} - {destination}");
     let title = RichText::new(title_str)
         .size(28.0)
         .family(FontFamily::Name("bold".into()))
