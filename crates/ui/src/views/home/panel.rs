@@ -1,3 +1,5 @@
+use std::{sync::mpsc, thread};
+
 use egui::{
     Align2, Button, Color32, FontFamily, FontId, Frame, Pos2, Rect, RichText, Sense, Stroke,
     StrokeKind, Ui, pos2, vec2,
@@ -6,8 +8,9 @@ use egui::{
 use crate::{
     components::modal::Modal,
     i18n::t,
-    state::{State, modal::Modal as ModalKind, trip::TripKind},
+    state::{State, modal::Modal as ModalKind, trips::TripKind},
     theme::{colors, corners},
+    views::View,
 };
 
 pub fn top_left(state: &mut State, ui: &mut Ui) {
@@ -29,14 +32,14 @@ fn render_trip_type_toggle(state: &mut State, ui: &mut Ui) {
     let (rect2, res2) = ui.allocate_exact_size(vec2(btn_width, BTN_HEIGHT), Sense::CLICK);
 
     if res1.clicked() {
-        state.trip.kind = TripKind::OneWay;
+        state.trips.kind = TripKind::OneWay;
     }
 
     if res2.clicked() {
-        state.trip.kind = TripKind::Round;
+        state.trips.kind = TripKind::Round;
     }
 
-    let is_one_way = state.trip.kind == TripKind::OneWay;
+    let is_one_way = state.trips.kind == TripKind::OneWay;
     let curr_rect = if is_one_way { rect1 } else { rect2 };
 
     let anime_x =
@@ -201,7 +204,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         let is_turkmen = state.lang.is_turkmen();
 
         col1.vertical_centered(|ui| {
-            let source_label = match &state.trip.source {
+            let source_label = match &state.trips.source {
                 Some(s) => {
                     if is_turkmen {
                         s.title_tm.as_str()
@@ -220,7 +223,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         });
 
         col2.vertical_centered(|ui| {
-            let dest_label = match &state.trip.destination {
+            let dest_label = match &state.trips.destination {
                 Some(s) => {
                     if is_turkmen {
                         s.title_tm.as_str()
@@ -250,7 +253,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
             }
         });
 
-        if state.trip.kind != TripKind::OneWay {
+        if state.trips.kind != TripKind::OneWay {
             col4.vertical_centered(|ui| {
                 let rt = state.calendar.round_trip_date;
                 let rt_label = rt.format("%d.%m.%Y").to_string();
@@ -267,7 +270,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
 
     ui.add_space(20.0);
 
-    let is_cooldown = state.trip.search_on_cooldown();
+    let is_cooldown = state.trips.search_on_cooldown();
 
     let (bg, fg) = if is_cooldown {
         (colors::BG_5, colors::FG_DISABLED)
@@ -275,9 +278,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         (colors::BTN_PRIMARY_BG, colors::WHITE)
     };
 
-    let search_lbl = RichText::new(t(&state.lang, "search"))
-        .size(18.0)
-        .color(fg);
+    let search_lbl = RichText::new(t(&state.lang, "search")).size(18.0).color(fg);
 
     let search_btn = Button::new(search_lbl)
         .min_size(vec2(150.0, BTN_HEIGHT))
@@ -287,8 +288,44 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
 
     ui.vertical_centered(|ui| {
         if ui.add(search_btn).clicked() && !is_cooldown {
-            state.trip.mark_searched();
-            log::debug!("search button clicked");
+            state.trips.mark_searched();
+
+            let Some(source) = &state.trips.source else {
+                return;
+            };
+            let Some(destination) = &state.trips.destination else {
+                return;
+            };
+
+            let source_id = source.id;
+            let destination_id = destination.id;
+            let date = state.calendar.one_way_date().format("%Y-%m-%d").to_string();
+            let adult = state.passengers.adults as u32;
+            let child = state.passengers.children as u32;
+
+            let (tx, rx) = mpsc::channel();
+            state.trips.start_fetching(rx);
+            state.go_to(View::Trips);
+
+            thread::spawn(move || {
+                let params = api::trips::TripsParams {
+                    source: source_id,
+                    destination: destination_id,
+                    date: &date,
+                    adult,
+                    child,
+                };
+
+                let result = match api::trips::fetch(params) {
+                    Ok(trips) => Some(trips),
+                    Err(e) => {
+                        log::error!("Error on `GET /trips`. {e}");
+                        None
+                    }
+                };
+
+                tx.send(result).ok();
+            });
         }
     });
 }

@@ -78,6 +78,7 @@ impl<'a> MenuButton<'a> {
             View::Refund => t(lang, "refund"),
             View::Seats => t(lang, "seats"),
             View::History => t(lang, "history"),
+            _ => "",
         }
     }
 

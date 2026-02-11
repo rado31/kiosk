@@ -25,8 +25,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // Passenger
     "pnrs_count" => "Ýolagçylaryň sany",
     "pnrs_max" => "Ýolagçylaryň iň köp sany 9",
-    "adult" => "Uly adam",
-    "child" => "Çaga",
+    "adult" => "Uly adam (10+ ýaş)",
+    "child" => "Çaga (5-10 ýaş)",
 
     // Days of week (2-letter)
     "day_mon" => "Du",
@@ -56,4 +56,15 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "find_by_letters" => "Harplar boýunça hem tapyp bilersiňiz",
     "from" => "Nireden",
     "to" => "Nirä",
+
+    // Trips
+    "trips_not_found" => "Gatnawlar tapylmady",
+    "trips_fetch_error" => "Gatnawlary alyp bolmady",
+    "departure" => "Ugraýan wagty",
+    "arrival" => "Barýan wagty",
+    "price" => "Bahasy",
+    "back" => "Yza",
+    "km" => "km",
+    "hour_short" => "sag",
+    "min_short" => "min",
 };

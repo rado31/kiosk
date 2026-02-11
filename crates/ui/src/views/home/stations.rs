@@ -32,9 +32,9 @@ pub fn show(state: &mut State, ctx: &Context) {
             });
         });
 
-        if should_close || state.trip.selected {
+        if should_close || state.trips.selected {
             state.modal = ModalKind::Closed;
-            state.trip.selected = false;
+            state.trips.selected = false;
         };
     }
 }
@@ -92,14 +92,14 @@ fn render_popular(state: &mut State, ui: &mut Ui) {
 
             col.vertical_centered(|ui| {
                 if ui.add(btn).clicked() && !is_disabled {
-                    state.trip.selected = true;
+                    state.trips.selected = true;
 
                     let station = (*station).clone();
 
                     if is_source_modal {
-                        state.trip.source = Some(station);
+                        state.trips.source = Some(station);
                     } else {
-                        state.trip.destination = Some(station);
+                        state.trips.destination = Some(station);
                     }
                 }
             });
@@ -109,9 +109,9 @@ fn render_popular(state: &mut State, ui: &mut Ui) {
 
 fn station_id_for(state: &State, source: bool) -> Option<u32> {
     if source {
-        state.trip.source.as_ref().map(|s| s.id)
+        state.trips.source.as_ref().map(|s| s.id)
     } else {
-        state.trip.destination.as_ref().map(|s| s.id)
+        state.trips.destination.as_ref().map(|s| s.id)
     }
 }
 
@@ -214,12 +214,12 @@ fn render_stations(state: &mut State, ui: &mut Ui) {
                         let station = station.clone();
 
                         if is_source_modal {
-                            state.trip.source = Some(station);
+                            state.trips.source = Some(station);
                         } else {
-                            state.trip.destination = Some(station);
+                            state.trips.destination = Some(station);
                         }
 
-                        state.trip.selected = true;
+                        state.trips.selected = true;
                     }
 
                     ui.add_space(10.0);

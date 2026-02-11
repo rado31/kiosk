@@ -27,7 +27,7 @@ impl HttpClient {
         self.agent
             .get(&url)
             .header("X-Device-Id", config::DEVICE_ID)
-            .header("Bearer", config::BEARER_TOKEN)
+            .header("Bearer", config::API_KEY)
             .header("ClientID", config::CLIENT_ID)
             .call()
             .map(|res| res.into_body())

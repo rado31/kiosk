@@ -10,6 +10,16 @@ pub struct Station {
     pub title_ru: String,
 }
 
+impl Station {
+    pub fn get_title(&self, is_turkmen: bool) -> &str {
+        if is_turkmen {
+            return &self.title_tm;
+        }
+
+        &self.title_ru
+    }
+}
+
 #[derive(Deserialize, Debug)]
 struct StationsData {
     stations: Vec<Station>,

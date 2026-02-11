@@ -25,8 +25,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // Passenger
     "pnrs_count" => "Количество пассажиров",
     "pnrs_max" => "Максимальное количество пассажиров 9",
-    "adult" => "Взрослый",
-    "child" => "Ребёнок",
+    "adult" => "Взрослый (10+ лет)",
+    "child" => "Ребёнок (5-10 лет)",
 
     // Days of week (2-letter)
     "day_mon" => "Пн",
@@ -56,4 +56,15 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "find_by_letters" => "Вы также можете найти по буквам",
     "from" => "Откуда",
     "to" => "Куда",
+
+    // Trips
+    "trips_not_found" => "Рейсы не найдены",
+    "trips_fetch_error" => "Не удалось загрузить рейсы",
+    "departure" => "Отправление",
+    "arrival" => "Прибытие",
+    "price" => "Цена",
+    "back" => "Назад",
+    "km" => "км",
+    "hour_short" => "ч",
+    "min_short" => "мин",
 };
