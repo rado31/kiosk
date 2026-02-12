@@ -1,4 +1,4 @@
-use egui::{Align2, Area, Context, Frame, Id, Order, Sense, Stroke, Ui, Vec2};
+use egui::{Align2, Area, Context, Frame, Id, Order, Sense, Shadow, Ui, Vec2};
 
 use crate::theme::{colors, corners};
 
@@ -54,7 +54,12 @@ impl<'a> Modal<'a> {
                 Frame::new()
                     .fill(colors::WHITE)
                     .corner_radius(corners::LARGE)
-                    .stroke(Stroke::new(1.0, colors::BORDER))
+                    .shadow(Shadow {
+                        offset: [0, 4],
+                        blur: 16,
+                        spread: 0,
+                        color: colors::SHADOW,
+                    })
                     .inner_margin(25.0)
                     .show(ui, |ui| {
                         ui.set_width(self.width);

@@ -1,8 +1,8 @@
 use std::sync::mpsc;
 
 use egui::{
-    Align, FontFamily, Frame, Image, Layout, Rect, RichText, ScrollArea, Sense, Spinner, Stroke,
-    StrokeKind, Ui, UiBuilder, include_image, vec2,
+    Align, FontFamily, Frame, Image, Layout, Rect, RichText, ScrollArea, Sense, Shadow, Spinner,
+    Stroke, StrokeKind, Ui, UiBuilder, include_image, vec2,
 };
 
 use crate::{
@@ -36,12 +36,19 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
     poll_trips(state, ctx);
 
     let (rect, res) = ui.allocate_exact_size(vec2(100.0, 60.0), Sense::CLICK);
+    let shadow = Shadow {
+        offset: [0, 2],
+        blur: 8,
+        spread: 0,
+        color: colors::SHADOW,
+    };
 
+    ui.painter().add(shadow.as_shape(rect, corners::MEDIUM));
     ui.painter().rect(
         rect,
         corners::MEDIUM,
         colors::BTN_PRIMARY_BG,
-        Stroke::new(1.0, colors::BORDER),
+        Stroke::NONE,
         StrokeKind::Outside,
     );
 
@@ -110,7 +117,7 @@ fn render_trip_section(
     let title = RichText::new(title_str)
         .size(28.0)
         .family(FontFamily::Name("bold".into()))
-        .color(colors::BLACK);
+        .color(colors::FG);
 
     ui.vertical_centered(|ui| ui.label(title));
     ui.add_space(20.0);
@@ -160,10 +167,15 @@ fn parse_datetime(datetime: &str) -> (String, String) {
 
 fn render_trip_card(state: &State, ui: &mut Ui, trip: &api::trips::Trip) {
     let card = Frame::new()
-        .inner_margin(20.0)
+        .inner_margin(24.0)
         .fill(colors::CARD_BG)
         .corner_radius(corners::MEDIUM)
-        .stroke(Stroke::new(1.0, colors::CARD_BORDER));
+        .shadow(Shadow {
+            offset: [0, 2],
+            blur: 8,
+            spread: 0,
+            color: colors::SHADOW,
+        });
 
     card.show(ui, |ui| {
         ui.set_width(ui.available_width());
@@ -183,7 +195,7 @@ fn render_trip_card(state: &State, ui: &mut Ui, trip: &api::trips::Trip) {
                 let time = RichText::new(&dep_time)
                     .size(28.0)
                     .family(FontFamily::Name("bold".into()))
-                    .color(colors::BLACK);
+                    .color(colors::FG);
 
                 ui.label(time);
                 ui.add_space(10.0);
@@ -237,7 +249,7 @@ fn render_trip_card(state: &State, ui: &mut Ui, trip: &api::trips::Trip) {
                 let time = RichText::new(&arr_time)
                     .size(28.0)
                     .family(FontFamily::Name("bold".into()))
-                    .color(colors::BLACK);
+                    .color(colors::FG);
 
                 ui.label(time);
                 ui.add_space(10.0);

@@ -1,4 +1,6 @@
-use egui::{Button, Context, FontFamily, Frame, RichText, ScrollArea, Stroke, Ui, vec2};
+use egui::{
+    Align2, Context, FontFamily, FontId, Frame, RichText, ScrollArea, Sense, Shadow, Ui, vec2,
+};
 
 use crate::{
     components::modal::Modal,
@@ -20,7 +22,7 @@ pub fn show(state: &mut State, ctx: &Context) {
                     RichText::new(t(&state.lang, "find_by_letters"))
                         .size(24.0)
                         .family(FontFamily::Name("bold".into()))
-                        .color(colors::BLACK),
+                        .color(colors::FG),
                 );
             });
 
@@ -54,7 +56,7 @@ fn render_popular(state: &mut State, ui: &mut Ui) {
             RichText::new(t(&state.lang, "most_popular_places"))
                 .size(24.0)
                 .family(FontFamily::Name("bold".into()))
-                .color(colors::BLACK),
+                .color(colors::FG),
         );
     });
 
@@ -64,6 +66,13 @@ fn render_popular(state: &mut State, ui: &mut Ui) {
         .iter()
         .filter_map(|id| stations.iter().find(|s| s.id == *id))
         .collect();
+
+    let shadow = Shadow {
+        offset: [0, 2],
+        blur: 8,
+        spread: 0,
+        color: colors::SHADOW,
+    };
 
     ui.columns_const(|cols: &mut [Ui; 5]| {
         for (col, station) in cols.iter_mut().zip(&popular) {
@@ -76,22 +85,38 @@ fn render_popular(state: &mut State, ui: &mut Ui) {
             let is_selected = selected_id == Some(station.id);
             let is_disabled = other_id == Some(station.id);
 
-            let (bg, fg) = if is_selected {
-                (colors::BTN_PRIMARY_BG, colors::WHITE)
+            let (bg, fg, show_shadow) = if is_selected {
+                (colors::BTN_PRIMARY_BG, colors::WHITE, false)
             } else if is_disabled {
-                (colors::BG_5, colors::FG_DISABLED)
+                (colors::BG_5, colors::FG_DISABLED, false)
             } else {
-                (colors::BG_4, colors::BLACK)
+                (colors::WHITE, colors::FG, true)
             };
 
             let width = col.available_width() - 10.0;
-            let btn = Button::new(RichText::new(title).size(18.0).color(fg))
-                .min_size(vec2(width, 80.0))
-                .fill(bg)
-                .corner_radius(corners::MEDIUM);
+            let sense = if is_disabled {
+                Sense::empty()
+            } else {
+                Sense::CLICK
+            };
 
             col.vertical_centered(|ui| {
-                if ui.add(btn).clicked() && !is_disabled {
+                let (rect, res) = ui.allocate_exact_size(vec2(width, 80.0), sense);
+
+                if show_shadow {
+                    ui.painter().add(shadow.as_shape(rect, corners::MEDIUM));
+                }
+
+                ui.painter().rect_filled(rect, corners::MEDIUM, bg);
+                ui.painter().text(
+                    rect.center(),
+                    Align2::CENTER_CENTER,
+                    title,
+                    FontId::proportional(18.0),
+                    fg,
+                );
+
+                if res.clicked() && !is_disabled {
                     state.trips.selected = true;
 
                     let station = (*station).clone();
@@ -125,6 +150,13 @@ fn render_letters(state: &mut State, ui: &mut Ui) {
     const PADDING: f32 = 5.0;
     const BTN_SIZE: f32 = 78.0;
 
+    let shadow = Shadow {
+        offset: [0, 2],
+        blur: 6,
+        spread: 0,
+        color: colors::SHADOW,
+    };
+
     for row in rows {
         ui.horizontal(|ui| {
             for letter in row.iter().filter(|l| !l.is_empty()) {
@@ -133,16 +165,25 @@ fn render_letters(state: &mut State, ui: &mut Ui) {
                 let (bg_color, fg_color) = if is_selected {
                     (colors::BTN_PRIMARY_BG, colors::WHITE)
                 } else {
-                    (colors::WHITE, colors::BLACK)
+                    (colors::WHITE, colors::FG)
                 };
 
-                let btn = Button::new(RichText::new(*letter).size(20.0).color(fg_color))
-                    .min_size(vec2(BTN_SIZE, BTN_SIZE))
-                    .stroke(Stroke::new(1.0, colors::BORDER))
-                    .fill(bg_color)
-                    .corner_radius(corners::MEDIUM);
+                let (rect, res) = ui.allocate_exact_size(vec2(BTN_SIZE, BTN_SIZE), Sense::CLICK);
 
-                if ui.add(btn).clicked() {
+                if !is_selected {
+                    ui.painter().add(shadow.as_shape(rect, corners::MEDIUM));
+                }
+
+                ui.painter().rect_filled(rect, corners::MEDIUM, bg_color);
+                ui.painter().text(
+                    rect.center(),
+                    Align2::CENTER_CENTER,
+                    *letter,
+                    FontId::proportional(20.0),
+                    fg_color,
+                );
+
+                if res.clicked() {
                     state.stations.selected_letter = letter;
                 }
 
@@ -157,12 +198,25 @@ fn render_letters(state: &mut State, ui: &mut Ui) {
 fn render_stations(state: &mut State, ui: &mut Ui) {
     let frame = Frame::new()
         .inner_margin(10)
-        .corner_radius(8)
-        .stroke(Stroke::new(1.0, colors::BORDER));
+        .corner_radius(corners::MEDIUM)
+        .fill(colors::WHITE)
+        .shadow(Shadow {
+            offset: [0, 2],
+            blur: 8,
+            spread: 0,
+            color: colors::SHADOW,
+        });
 
     let is_source_modal = state.modal == ModalKind::Source;
     let selected_id = station_id_for(state, is_source_modal);
     let other_id = station_id_for(state, !is_source_modal);
+
+    let shadow = Shadow {
+        offset: [0, 2],
+        blur: 6,
+        spread: 0,
+        color: colors::SHADOW,
+    };
 
     frame.show(ui, |ui| {
         ui.set_width(ui.available_width());
@@ -197,20 +251,37 @@ fn render_stations(state: &mut State, ui: &mut Ui) {
                     let is_selected = selected_id == Some(station.id);
                     let is_disabled = other_id == Some(station.id);
 
-                    let (bg, fg) = if is_selected {
-                        (colors::BTN_PRIMARY_BG, colors::WHITE)
+                    let (bg, fg, show_shadow) = if is_selected {
+                        (colors::BTN_PRIMARY_BG, colors::WHITE, false)
                     } else if is_disabled {
-                        (colors::BG_5, colors::FG_DISABLED)
+                        (colors::BG_5, colors::FG_DISABLED, false)
                     } else {
-                        (colors::BG_4, colors::BLACK)
+                        (colors::WHITE, colors::FG, true)
                     };
 
-                    let btn = Button::new(RichText::new(title).size(18.0).color(fg))
-                        .min_size(vec2(250.0, 80.0))
-                        .fill(bg)
-                        .corner_radius(corners::MEDIUM);
+                    let sense = if is_disabled {
+                        Sense::empty()
+                    } else {
+                        Sense::CLICK
+                    };
 
-                    if ui.add(btn).clicked() && !is_disabled {
+                    let (rect, res) =
+                        ui.allocate_exact_size(vec2(ui.available_width(), 80.0), sense);
+
+                    if show_shadow {
+                        ui.painter().add(shadow.as_shape(rect, corners::MEDIUM));
+                    }
+
+                    ui.painter().rect_filled(rect, corners::MEDIUM, bg);
+                    ui.painter().text(
+                        rect.center(),
+                        Align2::CENTER_CENTER,
+                        title,
+                        FontId::proportional(18.0),
+                        fg,
+                    );
+
+                    if res.clicked() && !is_disabled {
                         let station = station.clone();
 
                         if is_source_modal {

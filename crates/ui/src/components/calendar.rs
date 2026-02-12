@@ -1,5 +1,5 @@
 use chrono::{Datelike, NaiveDate};
-use egui::{Align2, Context, FontFamily, FontId, Sense, Stroke, StrokeKind, Ui, vec2};
+use egui::{Align2, Context, FontFamily, FontId, Sense, Shadow, Ui, vec2};
 
 use crate::{
     components::modal::Modal,
@@ -46,9 +46,9 @@ impl<'a> Calendar<'a> {
 
         let should_close = Modal::new(self.id).width(700.0).open(self.ctx, |ui| {
             self.render_header(ui, today);
-            ui.add_space(20.0);
+            ui.add_space(16.0);
             self.render_day_headers(ui);
-            ui.add_space(10.0);
+            ui.add_space(8.0);
             date_selected = self.render_day_grid(ui, today);
         });
 
@@ -87,30 +87,26 @@ impl<'a> Calendar<'a> {
                 && self.state.viewed_month > earliest.month());
 
         let width = ui.available_width();
-        let height = 72.0;
+        let btn_size = 56.0;
+        let corner = btn_size / 2.0;
 
         ui.horizontal(|ui| {
-            let (prev_rect, prev_res) = ui.allocate_exact_size(vec2(height, height), Sense::CLICK);
+            let (prev_rect, prev_res) =
+                ui.allocate_exact_size(vec2(btn_size, btn_size), Sense::CLICK);
 
-            let prev_color = if can_go_prev {
-                colors::PRIMARY
+            let (prev_bg, prev_fg) = if can_go_prev {
+                (colors::BG_DIM, colors::PRIMARY)
             } else {
-                colors::FG_DISABLED
+                (colors::BG_DIM, colors::FG_DISABLED)
             };
 
-            ui.painter().rect_stroke(
-                prev_rect,
-                corners::MEDIUM,
-                Stroke::new(2.0, colors::BORDER),
-                StrokeKind::Outside,
-            );
-
+            ui.painter().rect_filled(prev_rect, corner, prev_bg);
             ui.painter().text(
-                prev_rect.center(),
+                prev_rect.center() - vec2(1.0, 0.0),
                 Align2::CENTER_CENTER,
-                "<",
-                FontId::proportional(36.0),
-                prev_color,
+                "\u{2039}",
+                FontId::new(28.0, FontFamily::Name("bold".into())),
+                prev_fg,
             );
 
             if can_go_prev && prev_res.clicked() {
@@ -120,32 +116,27 @@ impl<'a> Calendar<'a> {
             let month_key = format!("month_{}", self.state.viewed_month);
             let month_name = t(self.lang, &month_key);
             let label = format!("{} {}", month_name, self.state.viewed_year);
-
-            let label_width = width - height * 2.0 - ui.spacing().item_spacing.x * 2.0;
-            let (label_rect, _) = ui.allocate_exact_size(vec2(label_width, height), Sense::empty());
+            let label_width = width - btn_size * 2.0;
+            let (label_rect, _) =
+                ui.allocate_exact_size(vec2(label_width, btn_size), Sense::empty());
 
             ui.painter().text(
                 label_rect.center(),
                 Align2::CENTER_CENTER,
                 label,
-                FontId::new(32.0, FontFamily::Name("bold".into())),
+                FontId::new(28.0, FontFamily::Name("bold".into())),
                 colors::FG,
             );
 
-            let (next_rect, next_res) = ui.allocate_exact_size(vec2(height, height), Sense::CLICK);
+            let (next_rect, next_res) =
+                ui.allocate_exact_size(vec2(btn_size, btn_size), Sense::CLICK);
 
-            ui.painter().rect_stroke(
-                next_rect,
-                corners::MEDIUM,
-                Stroke::new(2.0, colors::BORDER),
-                StrokeKind::Outside,
-            );
-
+            ui.painter().rect_filled(next_rect, corner, colors::BG_DIM);
             ui.painter().text(
-                next_rect.center(),
+                next_rect.center() + vec2(1.0, 0.0),
                 Align2::CENTER_CENTER,
-                ">",
-                FontId::proportional(36.0),
+                "\u{203A}",
+                FontId::new(28.0, FontFamily::Name("bold".into())),
                 colors::PRIMARY,
             );
 
@@ -164,13 +155,13 @@ impl<'a> Calendar<'a> {
 
         ui.horizontal(|ui| {
             for key in &day_keys {
-                let (rect, _) = ui.allocate_exact_size(vec2(cell_size, 60.0), Sense::empty());
+                let (rect, _) = ui.allocate_exact_size(vec2(cell_size, 40.0), Sense::empty());
 
                 ui.painter().text(
                     rect.center(),
                     Align2::CENTER_CENTER,
                     t(self.lang, key),
-                    FontId::proportional(26.0),
+                    FontId::new(18.0, FontFamily::Name("bold".into())),
                     colors::FG_MUTED,
                 );
             }
@@ -194,9 +185,16 @@ impl<'a> Calendar<'a> {
 
         let days_in_prev = calendar::days_in_month(prev_year, prev_month);
         let cell_size = ui.available_width() / 7.0;
-        let cell_height = 80.0;
-        let circle_radius = 36.0;
+        let cell_height = 70.0;
+        let circle_radius = 28.0;
         let mut date_selected = false;
+
+        let shadow = Shadow {
+            offset: [0, 1],
+            blur: 4,
+            spread: 0,
+            color: colors::SHADOW,
+        };
 
         for row in 0..6 {
             ui.horizontal(|ui| {
@@ -213,8 +211,8 @@ impl<'a> Calendar<'a> {
                         ui.painter().text(
                             center,
                             Align2::CENTER_CENTER,
-                            format!("{}", d),
-                            FontId::proportional(28.0),
+                            format!("{d}"),
+                            FontId::proportional(24.0),
                             colors::FG_DISABLED,
                         );
 
@@ -228,8 +226,8 @@ impl<'a> Calendar<'a> {
                         ui.painter().text(
                             center,
                             Align2::CENTER_CENTER,
-                            format!("{}", d),
-                            FontId::proportional(28.0),
+                            format!("{d}"),
+                            FontId::proportional(24.0),
                             colors::FG_DISABLED,
                         );
 
@@ -242,40 +240,47 @@ impl<'a> Calendar<'a> {
                     let is_past = date < min_date;
 
                     if is_selected {
+                        ui.painter().add(shadow.as_shape(
+                            rect.shrink2(vec2(
+                                cell_size / 2.0 - circle_radius,
+                                cell_height / 2.0 - circle_radius,
+                            )),
+                            corners::LARGE,
+                        ));
+
                         ui.painter()
-                            .circle_filled(center, circle_radius, colors::BTN_PRIMARY_BG);
+                            .circle_filled(center, circle_radius, colors::PRIMARY);
+
                         ui.painter().text(
                             center,
                             Align2::CENTER_CENTER,
-                            format!("{}", day),
-                            FontId::proportional(28.0),
+                            format!("{day}"),
+                            FontId::new(24.0, FontFamily::Name("bold".into())),
                             colors::WHITE,
                         );
                     } else if is_today {
-                        ui.painter().circle_stroke(
-                            center,
-                            circle_radius,
-                            Stroke::new(3.0, colors::PRIMARY),
-                        );
+                        ui.painter()
+                            .circle_filled(center, circle_radius, colors::PRIMARY_BG);
+
                         ui.painter().text(
                             center,
                             Align2::CENTER_CENTER,
-                            format!("{}", day),
-                            FontId::proportional(28.0),
+                            format!("{day}"),
+                            FontId::new(24.0, FontFamily::Name("bold".into())),
                             colors::PRIMARY,
                         );
                     } else {
                         let text_color = if is_past {
                             colors::FG_DISABLED
                         } else {
-                            colors::BLACK
+                            colors::FG
                         };
 
                         ui.painter().text(
                             center,
                             Align2::CENTER_CENTER,
-                            format!("{}", day),
-                            FontId::proportional(28.0),
+                            format!("{day}"),
+                            FontId::proportional(24.0),
                             text_color,
                         );
                     }

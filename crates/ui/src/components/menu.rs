@@ -1,6 +1,6 @@
 use egui::{
-    Color32, FontFamily, Image, ImageSource, RichText, Sense, Stroke, StrokeKind, Ui, UiBuilder,
-    include_image, vec2,
+    Color32, FontFamily, Image, ImageSource, RichText, Sense, Shadow, Stroke, StrokeKind, Ui,
+    UiBuilder, include_image, vec2,
 };
 
 use crate::{
@@ -15,7 +15,7 @@ pub fn show(state: &mut State, ui: &mut Ui) {
         let title = RichText::new(t(&state.lang, "terminal_title"))
             .size(32.0)
             .family(FontFamily::Name("bold".into()))
-            .color(colors::BLACK);
+            .color(colors::FG);
 
         ui.label(title)
     });
@@ -90,16 +90,24 @@ impl<'a> MenuButton<'a> {
         let (bg_active, fg_active, tint) = if is_active {
             (colors::PRIMARY, colors::WHITE, colors::WHITE)
         } else {
-            (colors::WHITE, colors::BLACK, self.color)
+            (colors::WHITE, colors::FG, self.color)
         };
 
         let (rect, res) = ui.allocate_exact_size(btn_size, Sense::CLICK);
 
+        let shadow = Shadow {
+            offset: [0, 2],
+            blur: 8,
+            spread: 0,
+            color: colors::SHADOW,
+        };
+
+        ui.painter().add(shadow.as_shape(rect, corners::LARGE));
         ui.painter().rect(
             rect,
             corners::LARGE,
             bg_active,
-            Stroke::new(1.0, colors::BORDER),
+            Stroke::NONE,
             StrokeKind::Outside,
         );
 

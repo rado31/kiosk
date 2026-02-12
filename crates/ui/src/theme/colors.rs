@@ -32,8 +32,8 @@ pub const BG_LIGHT: Color32 = Color32::from_rgb(245, 245, 245);
 // FOREGROUND / TEXT COLORS
 // ============================================================================
 
-/// Primary text color - rgba(0, 0, 0, 0.88)
-pub const FG: Color32 = Color32::from_rgb(0, 0, 0);
+/// Primary text color - soft black for light gray backgrounds
+pub const FG: Color32 = Color32::from_rgb(38, 38, 38);
 /// Secondary/muted text - rgba(0, 0, 0, 0.65)
 pub const FG_MUTED: Color32 = Color32::from_rgb(89, 89, 89);
 /// Disabled text - rgba(0, 0, 0, 0.25)
@@ -160,7 +160,7 @@ pub const BORDER_DISABLED: Color32 = Color32::from_rgb(217, 217, 217);
 // ============================================================================
 
 /// Shadow color (for drop shadows)
-pub const SHADOW: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 20);
+pub const SHADOW: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 30);
 /// Overlay color (for modals, drawers)
 pub const OVERLAY: Color32 = Color32::from_rgba_premultiplied(0, 0, 0, 115);
 

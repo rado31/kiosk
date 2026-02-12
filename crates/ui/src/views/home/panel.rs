@@ -1,8 +1,8 @@
 use std::{sync::mpsc, thread};
 
 use egui::{
-    Align2, Button, Color32, FontFamily, FontId, Frame, Pos2, Rect, RichText, Sense, Stroke,
-    StrokeKind, Ui, pos2, vec2,
+    Align, Align2, Button, Color32, FontFamily, FontId, Frame, Layout, Pos2, Rect, RichText, Sense,
+    Shadow, Stroke, StrokeKind, Ui, pos2, vec2,
 };
 
 use crate::{
@@ -16,8 +16,14 @@ use crate::{
 pub fn top_left(state: &mut State, ui: &mut Ui) {
     let frame = Frame::new()
         .inner_margin(5)
-        .corner_radius(8)
-        .stroke(Stroke::new(1.0, colors::BORDER));
+        .corner_radius(corners::MEDIUM)
+        .fill(colors::WHITE)
+        .shadow(Shadow {
+            offset: [0, 2],
+            blur: 8,
+            spread: 0,
+            color: colors::SHADOW,
+        });
 
     frame.show(ui, |ui| {
         ui.horizontal(|ui| render_trip_type_toggle(state, ui));
@@ -51,9 +57,9 @@ fn render_trip_type_toggle(state: &mut State, ui: &mut Ui) {
         .rect_filled(indicator_rect, corners::MEDIUM, colors::BTN_PRIMARY_BG);
 
     let (txt_color1, txt_color2) = if is_one_way {
-        (colors::WHITE, colors::BLACK)
+        (colors::WHITE, colors::FG)
     } else {
-        (colors::BLACK, colors::WHITE)
+        (colors::FG, colors::WHITE)
     };
 
     draw_centered_text(ui, rect1.center(), txt_color1, t(&state.lang, "one_way"));
@@ -78,12 +84,19 @@ pub fn top_right(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
     );
 
     let (rect, res) = ui.allocate_exact_size(vec2(250.0, 60.0), Sense::CLICK);
+    let shadow = Shadow {
+        offset: [0, 2],
+        blur: 8,
+        spread: 0,
+        color: colors::SHADOW,
+    };
 
+    ui.painter().add(shadow.as_shape(rect, corners::MEDIUM));
     ui.painter().rect(
         rect,
         corners::MEDIUM,
         colors::WHITE,
-        Stroke::new(1.0, colors::BORDER),
+        Stroke::NONE,
         StrokeKind::Outside,
     );
 
@@ -92,7 +105,7 @@ pub fn top_right(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
         Align2::CENTER_CENTER,
         total_pnrs,
         FontId::proportional(16.0),
-        colors::BLACK,
+        colors::FG,
     );
 
     if res.clicked() {
@@ -101,7 +114,7 @@ pub fn top_right(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
 
     if state.modal == ModalKind::PnrCounts {
         let should_close = Modal::new("pnr_counts_modal")
-            .width(400.0)
+            .width(500.0)
             .open(ctx, |ui| render_pnr_counts_modal(state, ui));
 
         if should_close {
@@ -111,76 +124,117 @@ pub fn top_right(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
 }
 
 fn render_pnr_counts_modal(state: &mut State, ui: &mut Ui) {
-    render_pnr_counter(state, ui, true);
-    ui.add_space(40.0);
+    render_pnr_row(state, ui, true);
+    ui.add_space(16.0);
+    render_pnr_row(state, ui, false);
+    ui.add_space(24.0);
+    ui.vertical_centered(|ui| {
+        let lbl = RichText::new(t(&state.lang, "pnrs_max"))
+            .size(16.0)
+            .color(colors::FG_MUTED);
 
-    render_pnr_counter(state, ui, false);
-    ui.add_space(40.0);
-
-    let desc = RichText::new(t(&state.lang, "pnrs_max"))
-        .size(20.0)
-        .color(colors::BLACK);
-
-    ui.vertical_centered(|ui| ui.label(desc));
+        ui.label(lbl);
+    });
 }
 
-fn render_pnr_counter(state: &mut State, ui: &mut Ui, is_adult: bool) {
-    ui.vertical_centered(|ui| {
+fn render_pnr_row(state: &mut State, ui: &mut Ui, is_adult: bool) {
+    let card = Frame::new()
+        .inner_margin(20.0)
+        .fill(colors::WHITE)
+        .corner_radius(corners::MEDIUM)
+        .shadow(Shadow {
+            offset: [0, 2],
+            blur: 8,
+            spread: 0,
+            color: colors::SHADOW,
+        });
+
+    card.show(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.set_height(80.0);
+
         let title = if is_adult {
             t(&state.lang, "adult")
         } else {
             t(&state.lang, "child")
         };
 
-        ui.label(
-            RichText::new(title)
-                .size(28.0)
-                .family(FontFamily::Name("bold".into()))
-                .color(colors::BLACK),
-        );
-    });
-
-    ui.add_space(40.0);
-
-    ui.columns_const(|[col1, col2, col3]| {
-        let create_btn = |text: &str| {
-            Button::new(RichText::new(text).size(36.0).color(colors::BLACK))
-                .min_size(vec2(100.0, 100.0))
-                .fill(colors::WHITE)
-                .stroke(Stroke::new(1.0, colors::BORDER))
-                .corner_radius(corners::SMALL)
+        let count = if is_adult {
+            state.passengers.adults
+        } else {
+            state.passengers.children
         };
 
-        col1.vertical_centered(|ui| {
-            if ui.add(create_btn("-")).clicked() {
-                if is_adult {
-                    state.passengers.remove_adult();
+        let can_sub = count > 0 && state.passengers.total() > 1;
+        let can_add = state.passengers.total() < 9;
+
+        ui.horizontal_centered(|ui| {
+            ui.label(RichText::new(title).size(24.0).color(colors::FG));
+            ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                let size = 60.0;
+                let corner = 30.0;
+
+                let (plus_bg, plus_fg) = if can_add {
+                    (colors::PRIMARY, colors::WHITE)
                 } else {
-                    state.passengers.remove_child();
-                }
-            }
-        });
+                    (colors::BG_5, colors::FG_DISABLED)
+                };
 
-        col2.vertical_centered(|ui| {
-            ui.add_space(30.0);
+                let (plus_rec, plus_res) = ui.allocate_exact_size(vec2(size, size), Sense::CLICK);
 
-            let count = if is_adult {
-                format!("{}", state.passengers.adults)
-            } else {
-                format!("{}", state.passengers.children)
-            };
+                ui.painter().rect_filled(plus_rec, corner, plus_bg);
+                ui.painter().text(
+                    plus_rec.center() - vec2(0.0, 2.0),
+                    Align2::CENTER_CENTER,
+                    "+",
+                    FontId::new(30.0, FontFamily::Name("bold".into())),
+                    plus_fg,
+                );
 
-            ui.label(RichText::new(count).size(36.0).color(colors::BLACK));
-        });
+                let (count_rect, _) = ui.allocate_exact_size(vec2(size, size), Sense::empty());
 
-        col3.vertical_centered(|ui| {
-            if ui.add(create_btn("+")).clicked() {
-                if is_adult {
-                    state.passengers.add_adult();
+                ui.painter().text(
+                    count_rect.center(),
+                    Align2::CENTER_CENTER,
+                    format!("{count}"),
+                    FontId::new(30.0, FontFamily::Name("bold".into())),
+                    colors::FG,
+                );
+
+                let (minus_rect, minus_res) =
+                    ui.allocate_exact_size(vec2(size, size), Sense::CLICK);
+
+                let (minus_bg, minus_fg) = if can_sub {
+                    (colors::PRIMARY, colors::WHITE)
                 } else {
-                    state.passengers.add_child();
+                    (colors::BG_5, colors::FG_DISABLED)
+                };
+
+                ui.painter().rect_filled(minus_rect, corner, minus_bg);
+                ui.painter().text(
+                    minus_rect.center() - vec2(0.0, 2.0),
+                    Align2::CENTER_CENTER,
+                    "-",
+                    FontId::new(24.0, FontFamily::Name("bold".into())),
+                    minus_fg,
+                );
+
+                if plus_res.clicked() && can_add {
+                    if is_adult {
+                        state.passengers.add_adult();
+                    } else {
+                        state.passengers.add_child();
+                    }
                 }
-            }
+
+                if minus_res.clicked() && can_sub {
+                    if is_adult {
+                        state.passengers.remove_adult();
+                    } else {
+                        state.passengers.remove_child();
+                    }
+                }
+            });
         });
     });
 }
@@ -189,15 +243,30 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
     const BTN_HEIGHT: f32 = 60.0;
     const PADDING: f32 = 10.0;
 
-    let create_col_btn = |ui: &mut Ui, text: &str| {
-        let label = RichText::new(text).size(18.0).color(colors::BLACK);
-        let width = ui.available_width() - PADDING;
+    let shadow = Shadow {
+        offset: [0, 2],
+        blur: 8,
+        spread: 0,
+        color: colors::SHADOW,
+    };
 
-        Button::new(label)
-            .min_size(vec2(width, BTN_HEIGHT))
-            .stroke(Stroke::new(1.0, colors::BORDER))
-            .fill(colors::WHITE)
-            .corner_radius(corners::MEDIUM)
+    let paint_col_btn = |ui: &mut Ui, text: &str| {
+        let width = ui.available_width() - PADDING;
+        let (rect, res) = ui.allocate_exact_size(vec2(width, BTN_HEIGHT), Sense::CLICK);
+
+        ui.painter().add(shadow.as_shape(rect, corners::MEDIUM));
+        ui.painter()
+            .rect_filled(rect, corners::MEDIUM, colors::WHITE);
+
+        ui.painter().text(
+            rect.center(),
+            Align2::CENTER_CENTER,
+            text,
+            FontId::proportional(18.0),
+            colors::FG,
+        );
+
+        res
     };
 
     ui.columns_const(|[col1, col2, col3, col4]| {
@@ -215,9 +284,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
                 None => t(&state.lang, "from"),
             };
 
-            let source_btn = create_col_btn(ui, source_label);
-
-            if ui.add(source_btn).clicked() {
+            if paint_col_btn(ui, source_label).clicked() {
                 state.modal = ModalKind::Source;
             }
         });
@@ -234,9 +301,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
                 None => t(&state.lang, "to"),
             };
 
-            let destination_btn = create_col_btn(ui, dest_label);
-
-            if ui.add(destination_btn).clicked() {
+            if paint_col_btn(ui, dest_label).clicked() {
                 state.modal = ModalKind::Destination;
             }
         });
@@ -244,9 +309,8 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         col3.vertical_centered(|ui| {
             let ow = state.calendar.one_way_date;
             let ow_label = ow.format("%d.%m.%Y").to_string();
-            let one_way_btn = create_col_btn(ui, &ow_label);
 
-            if ui.add(one_way_btn).clicked() {
+            if paint_col_btn(ui, &ow_label).clicked() {
                 let date = state.calendar.one_way_date;
                 state.calendar.view_date(date);
                 state.modal = ModalKind::OneWayCalendar;
@@ -257,9 +321,8 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
             col4.vertical_centered(|ui| {
                 let rt = state.calendar.round_trip_date;
                 let rt_label = rt.format("%d.%m.%Y").to_string();
-                let round_trip_btn = create_col_btn(ui, &rt_label);
 
-                if ui.add(round_trip_btn).clicked() {
+                if paint_col_btn(ui, &rt_label).clicked() {
                     let date = state.calendar.round_trip_date;
                     state.calendar.view_date(date);
                     state.modal = ModalKind::RoundTripCalendar;
@@ -278,11 +341,8 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         (colors::BTN_PRIMARY_BG, colors::WHITE)
     };
 
-    let search_lbl = RichText::new(t(&state.lang, "search")).size(18.0).color(fg);
-
-    let search_btn = Button::new(search_lbl)
+    let search_btn = Button::new(RichText::new(t(&state.lang, "search")).size(18.0).color(fg))
         .min_size(vec2(150.0, BTN_HEIGHT))
-        .stroke(Stroke::new(1.0, colors::BORDER))
         .fill(bg)
         .corner_radius(corners::MEDIUM);
 
@@ -305,6 +365,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
             let adult = state.passengers.adults as u32;
             let child = state.passengers.children as u32;
             let is_round = state.trips.kind == TripKind::Round;
+
             let inbound_date = if is_round {
                 Some(
                     state

@@ -160,7 +160,7 @@ impl State {
     pub fn render_ui(&mut self, ctx: &Context) {
         components::header::show(self, ctx);
 
-        let container = egui::Frame::new().fill(colors::BG).inner_margin(20.0);
+        let container = egui::Frame::new().fill(colors::BG_DIM).inner_margin(20.0);
 
         CentralPanel::default().frame(container).show(ctx, |ui| {
             views::view(self, ctx, ui);

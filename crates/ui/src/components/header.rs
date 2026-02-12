@@ -1,6 +1,6 @@
 use egui::{
-    Align, Button, Context, Frame, Image, Layout, Margin, Pos2, RichText, Stroke, TopBottomPanel,
-    Ui, include_image, vec2,
+    Align, Button, Context, Frame, Image, Layout, Margin, Pos2, RichText, Shadow, Stroke,
+    TopBottomPanel, Ui, include_image, vec2,
 };
 
 use crate::{state::State, theme::colors, views::View};
@@ -10,7 +10,12 @@ const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub fn show(state: &mut State, ctx: &Context) {
     let frame = Frame::new()
         .fill(colors::WHITE)
-        .stroke(Stroke::new(1.0, colors::BORDER))
+        .shadow(Shadow {
+            offset: [0, 1],
+            blur: 4,
+            spread: 0,
+            color: colors::SHADOW,
+        })
         .inner_margin(Margin::symmetric(20, 10));
 
     let top_panel = TopBottomPanel::top("top_panel")
