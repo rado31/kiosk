@@ -56,6 +56,7 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "find_by_letters" => "Harplar boýunça hem tapyp bilersiňiz",
     "from" => "Nireden",
     "to" => "Nirä",
+    "stations_fetch_error" => "Stansiýalary alyp bolmady",
 
     // Notifications
     "select_source" => "Ugradylýan stansiýany saýlaň",

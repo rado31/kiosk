@@ -5,6 +5,7 @@ use api::stations::Station;
 pub struct State {
     is_fetching: bool,
     has_fetched: bool,
+    has_error: bool,
     data: Option<Vec<Station>>,
     receiver: Option<Receiver<Option<Vec<Station>>>>,
     pub selected_letter: &'static str,
@@ -15,6 +16,7 @@ impl Default for State {
         Self {
             is_fetching: false,
             has_fetched: false,
+            has_error: false,
             data: None,
             receiver: None,
             selected_letter: "A",
@@ -40,7 +42,12 @@ impl State {
         self.receiver.take()
     }
 
+    pub fn has_error(&self) -> bool {
+        self.has_error
+    }
+
     pub fn set_result(&mut self, data: Option<Vec<Station>>) {
+        self.has_error = data.is_none();
         self.data = data;
         self.is_fetching = false;
         self.has_fetched = true;

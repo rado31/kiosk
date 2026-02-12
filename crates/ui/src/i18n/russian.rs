@@ -56,6 +56,7 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "find_by_letters" => "Вы также можете найти по буквам",
     "from" => "Откуда",
     "to" => "Куда",
+    "stations_fetch_error" => "Не удалось загрузить станции",
 
     // Notifications
     "select_source" => "Выберите станцию отправления",

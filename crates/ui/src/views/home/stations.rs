@@ -13,6 +13,11 @@ use core::config::POPULAR_STATION_IDS;
 pub fn show(state: &mut State, ctx: &Context) {
     if state.modal == ModalKind::Source || state.modal == ModalKind::Destination {
         let should_close = Modal::new("stations_modal").width(880.0).open(ctx, |ui| {
+            if state.stations.has_error() {
+                render_error(state, ui);
+                return;
+            }
+
             render_popular(state, ui);
 
             ui.add_space(40.0);
@@ -39,6 +44,16 @@ pub fn show(state: &mut State, ctx: &Context) {
             state.trips.selected = false;
         };
     }
+}
+
+fn render_error(state: &State, ui: &mut Ui) {
+    ui.vertical_centered(|ui| {
+        ui.label(
+            RichText::new(t(&state.lang, "stations_fetch_error"))
+                .size(22.0)
+                .color(colors::ERROR),
+        );
+    });
 }
 
 fn render_popular(state: &mut State, ui: &mut Ui) {
