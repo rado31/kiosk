@@ -57,6 +57,10 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "from" => "Откуда",
     "to" => "Куда",
 
+    // Notifications
+    "select_source" => "Выберите станцию отправления",
+    "select_destination" => "Выберите станцию назначения",
+
     // Trips
     "trips_not_found" => "Рейсы не найдены",
     "trips_fetch_error" => "Не удалось загрузить рейсы",

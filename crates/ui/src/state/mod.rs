@@ -1,4 +1,6 @@
-use crate::{i18n::Language, views::View};
+use egui_toast::Toasts;
+
+use crate::{components::toast, i18n::Language, views::View};
 
 pub mod calendar;
 pub mod modal;
@@ -7,7 +9,6 @@ pub mod stations;
 pub mod trips;
 pub mod update;
 
-#[derive(Default)]
 pub struct State {
     view: View,
     pub lang: Language,
@@ -15,8 +16,25 @@ pub struct State {
     pub modal: modal::Modal,
     pub passengers: passengers::State,
     pub calendar: calendar::State,
+    pub toasts: Toasts,
     pub stations: stations::State,
     pub trips: trips::State,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            view: View::default(),
+            lang: Language::default(),
+            update: update::State::default(),
+            modal: modal::Modal::default(),
+            passengers: passengers::State::default(),
+            calendar: calendar::State::default(),
+            toasts: toast::create(),
+            stations: stations::State::default(),
+            trips: trips::State::default(),
+        }
+    }
 }
 
 impl State {

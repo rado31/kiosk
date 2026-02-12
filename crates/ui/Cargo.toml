@@ -15,4 +15,5 @@ log = "0.4.29"
 eframe = "0.33.3"
 egui = "0.33.3"
 egui_extras = { version = "0.33.3", features = ["image", "svg"] }
+egui-toast = "0.19.1"
 phf = { version = "0.11", features = ["macros"] }

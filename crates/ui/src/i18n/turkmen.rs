@@ -57,6 +57,10 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "from" => "Nireden",
     "to" => "Nirä",
 
+    // Notifications
+    "select_source" => "Ugradylýan stansiýany saýlaň",
+    "select_destination" => "Barylýan stansiýany saýlaň",
+
     // Trips
     "trips_not_found" => "Gatnawlar tapylmady",
     "trips_fetch_error" => "Gatnawlary alyp bolmady",

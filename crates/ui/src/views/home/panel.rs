@@ -5,6 +5,8 @@ use egui::{
     Shadow, Stroke, StrokeKind, Ui, pos2, vec2,
 };
 
+use egui_toast::{Toast, ToastKind, ToastOptions};
+
 use crate::{
     components::modal::Modal,
     i18n::t,
@@ -350,12 +352,25 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         if ui.add(search_btn).clicked() && !is_cooldown {
             state.trips.mark_searched();
 
-            // TODO: notify error if source or destination is empty
             let Some(source) = &state.trips.source else {
+                state.toasts.add(Toast {
+                    text: t(&state.lang, "select_source").into(),
+                    kind: ToastKind::Error,
+                    options: ToastOptions::default().duration_in_seconds(3.0),
+                    ..Default::default()
+                });
+
                 return;
             };
 
             let Some(destination) = &state.trips.destination else {
+                state.toasts.add(Toast {
+                    text: t(&state.lang, "select_destination").into(),
+                    kind: ToastKind::Error,
+                    options: ToastOptions::default().duration_in_seconds(3.0),
+                    ..Default::default()
+                });
+
                 return;
             };
 

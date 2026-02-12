@@ -169,5 +169,7 @@ impl State {
         if let Some(progress) = self.update.status.downloading() {
             components::updater_modal::open(ctx, progress);
         }
+
+        self.toasts.show(ctx);
     }
 }
