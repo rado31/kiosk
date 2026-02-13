@@ -27,7 +27,7 @@ Dependency graph: `core` → `api` → `ui`
 ### State
 - State lives in `crates/ui/src/state/mod.rs`, sub-modules are `pub mod`
 - Data-oriented: pub fields, no getters/setters unless enforcing invariants
-- Invariant examples: `calendar::State` keeps `one_way_date` private (setter bumps round_trip); `stations::State` keeps async fields private
+- Invariant examples: `calendar::State` keeps `one_way_date` private (setter bumps round_trip); `stations::State` keeps async fields private and tracks `has_error`
 
 ### i18n
 - Two languages: Turkmen, Russian
@@ -42,6 +42,7 @@ Dependency graph: `core` → `api` → `ui`
 - Standard shadow: `Shadow { offset: [0, 2], blur: 8, spread: 0, color: colors::SHADOW }`
 - For interactive elements (buttons) without `Frame`, paint shadow manually: `ui.painter().add(shadow.as_shape(rect, corners::MEDIUM))`
 - Text color: use `colors::FG` (soft black #262626) — never `colors::BLACK` for UI text
+- Error text: use `colors::ERROR` with centered `RichText` label at 22.0 size
 - `egui::Shadow` fields are integer types: `offset: [i8; 2]`, `blur: u8`, `spread: u8`
 - Buttons with colored fills (primary, success, etc.) don't need borders or shadows
 - Buttons with white/neutral fills on white backgrounds: use `BG_DIM` fill or shadow for contrast
