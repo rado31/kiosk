@@ -7,6 +7,7 @@ pub mod modal;
 pub mod passengers;
 pub mod stations;
 pub mod trips;
+pub mod print_ticket;
 pub mod update;
 
 pub struct State {
@@ -18,6 +19,7 @@ pub struct State {
     pub calendar: calendar::State,
     pub toasts: Toasts,
     pub stations: stations::State,
+    pub print_ticket: print_ticket::State,
     pub trips: trips::State,
 }
 
@@ -32,6 +34,7 @@ impl Default for State {
             calendar: calendar::State::default(),
             toasts: toast::create(),
             stations: stations::State::default(),
+            print_ticket: print_ticket::State::default(),
             trips: trips::State::default(),
         }
     }

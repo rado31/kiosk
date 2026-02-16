@@ -1,4 +1,5 @@
 pub mod calendar;
+pub mod input;
 pub mod header;
 pub mod menu;
 pub mod modal;

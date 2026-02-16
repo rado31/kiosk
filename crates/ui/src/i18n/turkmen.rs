@@ -72,4 +72,7 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "km" => "km",
     "hour_short" => "sag",
     "min_short" => "min",
+
+    // Print ticket
+    "enter_ticket_code" => "Nomer",
 };
