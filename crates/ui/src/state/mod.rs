@@ -5,9 +5,9 @@ use crate::{components::toast, i18n::Language, views::View};
 pub mod calendar;
 pub mod modal;
 pub mod passengers;
+pub mod print_ticket;
 pub mod stations;
 pub mod trips;
-pub mod print_ticket;
 pub mod update;
 
 pub struct State {
@@ -21,6 +21,7 @@ pub struct State {
     pub stations: stations::State,
     pub print_ticket: print_ticket::State,
     pub trips: trips::State,
+    pub keyboard_visible: bool,
 }
 
 impl Default for State {
@@ -36,6 +37,7 @@ impl Default for State {
             stations: stations::State::default(),
             print_ticket: print_ticket::State::default(),
             trips: trips::State::default(),
+            keyboard_visible: false,
         }
     }
 }

@@ -1,4 +1,6 @@
-use egui::{Align, FontFamily, FontId, Frame, Margin, Response, Stroke, TextEdit, Ui, Vec2, vec2};
+use egui::{
+    Align, FontFamily, FontId, Frame, Id, Margin, Response, Stroke, TextEdit, Ui, Vec2, vec2,
+};
 
 use crate::theme::{colors, corners};
 
@@ -10,6 +12,7 @@ pub struct Input<'a> {
     horizontal_align: Align,
     vertical_align: Align,
     desired_size: Option<Vec2>,
+    id: Option<Id>,
 }
 
 #[allow(dead_code)]
@@ -23,6 +26,7 @@ impl<'a> Input<'a> {
             horizontal_align: Align::LEFT,
             vertical_align: Align::Center,
             desired_size: None,
+            id: None,
         }
     }
 
@@ -61,13 +65,18 @@ impl<'a> Input<'a> {
         self
     }
 
-    pub fn desired_size(mut self, size: egui::Vec2) -> Self {
+    pub fn desired_size(mut self, size: Vec2) -> Self {
         self.desired_size = Some(size);
         self
     }
 
+    pub fn id(mut self, id: Id) -> Self {
+        self.id = Some(id);
+        self
+    }
+
     pub fn show(self, ui: &mut Ui) -> Response {
-        let id = ui.next_auto_id();
+        let id = self.id.unwrap_or_else(|| ui.next_auto_id());
         let has_focus = ui.memory(|m| m.has_focus(id));
 
         let border_color = if has_focus {
