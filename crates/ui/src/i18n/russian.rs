@@ -74,5 +74,6 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "min_short" => "мин",
 
     // Print ticket
-    "enter_ticket_code" => "Номер",
+    "enter_booking_number" => "Введите номер бронирования",
+    "print" => "Распечатать",
 };
