@@ -1,8 +1,8 @@
 use std::{sync::mpsc, thread};
 
 use egui::{
-    Align, Align2, Button, Color32, FontFamily, FontId, Frame, Layout, Pos2, Rect, RichText, Sense,
-    Shadow, Stroke, StrokeKind, Ui, pos2, vec2,
+    Align, Align2, Button, Color32, FontFamily, FontId, Frame, Image, Layout, Pos2, Rect, RichText,
+    Sense, Shadow, Stroke, StrokeKind, Ui, include_image, pos2, vec2,
 };
 
 use egui_toast::{Toast, ToastKind, ToastOptions};
@@ -243,7 +243,8 @@ fn render_pnr_row(state: &mut State, ui: &mut Ui, is_adult: bool) {
 
 pub fn bottom(state: &mut State, ui: &mut Ui) {
     const BTN_HEIGHT: f32 = 60.0;
-    const PADDING: f32 = 10.0;
+    const GAP: f32 = 10.0;
+    const SWAP_BTN_W: f32 = 60.0;
 
     let shadow = Shadow {
         offset: [0, 2],
@@ -252,14 +253,12 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         color: colors::SHADOW,
     };
 
-    let paint_col_btn = |ui: &mut Ui, text: &str| {
-        let width = ui.available_width() - PADDING;
+    let paint_btn = |ui: &mut Ui, width: f32, text: &str| -> egui::Response {
         let (rect, res) = ui.allocate_exact_size(vec2(width, BTN_HEIGHT), Sense::CLICK);
 
         ui.painter().add(shadow.as_shape(rect, corners::MEDIUM));
         ui.painter()
             .rect_filled(rect, corners::MEDIUM, colors::WHITE);
-
         ui.painter().text(
             rect.center(),
             Align2::CENTER_CENTER,
@@ -271,11 +270,15 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
         res
     };
 
-    ui.columns_const(|[col1, col2, col3, col4]| {
+    ui.horizontal(|ui| {
         let is_turkmen = state.lang.is_turkmen();
+        let total_w = ui.available_width();
+        let quarter = total_w / 4.0;
+        let station_btn_w = quarter - 40.0;
+        let date_btn_w = quarter - GAP;
 
-        col1.vertical_centered(|ui| {
-            let source_label = match &state.trips.source {
+        let src_res = {
+            let label = match &state.trips.source {
                 Some(s) => {
                     if is_turkmen {
                         s.title_tm.as_str()
@@ -286,13 +289,31 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
                 None => t(&state.lang, "from"),
             };
 
-            if paint_col_btn(ui, source_label).clicked() {
-                state.modal = ModalKind::Source;
-            }
-        });
+            paint_btn(ui, station_btn_w, label)
+        };
 
-        col2.vertical_centered(|ui| {
-            let dest_label = match &state.trips.destination {
+        ui.add_space(GAP);
+
+        let (swap_rect, swap_res) =
+            ui.allocate_exact_size(vec2(SWAP_BTN_W, BTN_HEIGHT), Sense::CLICK);
+
+        ui.painter()
+            .add(shadow.as_shape(swap_rect, corners::MEDIUM));
+
+        ui.painter()
+            .rect_filled(swap_rect, corners::MEDIUM, colors::WHITE);
+
+        let icon_rect = Rect::from_center_size(swap_rect.center(), vec2(24.0, 24.0));
+
+        Image::new(include_image!("../../assets/swap.svg"))
+            .fit_to_exact_size(vec2(24.0, 24.0))
+            .tint(colors::SECONDARY)
+            .paint_at(ui, icon_rect);
+
+        ui.add_space(GAP);
+
+        let dst_res = {
+            let label = match &state.trips.destination {
                 Some(s) => {
                     if is_turkmen {
                         s.title_tm.as_str()
@@ -303,33 +324,55 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
                 None => t(&state.lang, "to"),
             };
 
-            if paint_col_btn(ui, dest_label).clicked() {
-                state.modal = ModalKind::Destination;
-            }
-        });
+            paint_btn(ui, station_btn_w, label)
+        };
 
-        col3.vertical_centered(|ui| {
-            let ow = state.calendar.one_way_date;
-            let ow_label = ow.format("%d.%m.%Y").to_string();
+        ui.add_space(GAP);
 
-            if paint_col_btn(ui, &ow_label).clicked() {
-                let date = state.calendar.one_way_date;
-                state.calendar.view_date(date);
-                state.modal = ModalKind::OneWayCalendar;
-            }
-        });
+        // One-way date button
+        let ow_label = state.calendar.one_way_date.format("%d.%m.%Y").to_string();
+        let ow_res = paint_btn(ui, date_btn_w, &ow_label);
 
-        if state.trips.kind != TripKind::OneWay {
-            col4.vertical_centered(|ui| {
-                let rt = state.calendar.round_trip_date;
-                let rt_label = rt.format("%d.%m.%Y").to_string();
+        // Round-trip date button
+        let rt_res = if state.trips.kind != TripKind::OneWay {
+            ui.add_space(GAP);
 
-                if paint_col_btn(ui, &rt_label).clicked() {
-                    let date = state.calendar.round_trip_date;
-                    state.calendar.view_date(date);
-                    state.modal = ModalKind::RoundTripCalendar;
-                }
-            });
+            let rt_label = state
+                .calendar
+                .round_trip_date
+                .format("%d.%m.%Y")
+                .to_string();
+
+            Some(paint_btn(ui, date_btn_w, &rt_label))
+        } else {
+            None
+        };
+
+        // Handle clicks
+        if src_res.clicked() {
+            state.modal = ModalKind::Source;
+        }
+
+        if swap_res.clicked() {
+            std::mem::swap(&mut state.trips.source, &mut state.trips.destination);
+        }
+
+        if dst_res.clicked() {
+            state.modal = ModalKind::Destination;
+        }
+
+        if ow_res.clicked() {
+            let date = state.calendar.one_way_date;
+            state.calendar.view_date(date);
+            state.modal = ModalKind::OneWayCalendar;
+        }
+
+        if let Some(rt_res) = rt_res
+            && rt_res.clicked()
+        {
+            let date = state.calendar.round_trip_date;
+            state.calendar.view_date(date);
+            state.modal = ModalKind::RoundTripCalendar;
         }
     });
 
@@ -394,6 +437,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
             };
 
             let (tx, rx) = mpsc::channel();
+
             state.trips.start_fetching(rx);
             state.go_to(View::Trips);
 
