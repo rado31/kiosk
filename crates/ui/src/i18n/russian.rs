@@ -76,4 +76,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     // Print ticket
     "enter_booking_number" => "Введите номер бронирования",
     "print" => "Распечатать",
+    "terminal_ticket" => "Терминал",
+    "external_ticket" => "Касса / Онлайн",
+    "external_print_notice" => "Печать этих билетов платная",
+    "pay_and_print" => "Оплатить и распечатать",
 };

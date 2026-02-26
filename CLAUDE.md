@@ -54,6 +54,13 @@ Dependency graph: `core` → `api` → `ui`
 - For `RichText`: `.family(FontFamily::Name("bold".into()))`
 - For painter API: `FontId::new(size, FontFamily::Name("bold".into()))`
 
+### SVG Icons
+- SVG assets live in `crates/ui/src/assets/`
+- Include with `include_image!("../assets/foo.svg")` — path relative to the source file
+- Render at a specific rect: `allocate_exact_size` → paint shadow/fill → `Image::new(include_image!(...)).fit_to_exact_size(size).tint(color).paint_at(ui, rect)`
+- **Tinting**: `.tint()` multiplies pixel colors — SVG strokes/fills **must be white** (`stroke="white"`) for the tint color to show. Black strokes stay black regardless of tint.
+- Use `Rect::from_center_size(rect.center(), icon_size)` to center the icon inside a button rect
+
 ### egui Patterns
 - Create button widget before `ui.add()` — don't pass `ui` to builder and `ui.add()` in same expression
 - `include_bytes!` / `include_image!` paths are relative to the source file
@@ -62,6 +69,17 @@ Dependency graph: `core` → `api` → `ui`
 - For painter-based interactive elements: `allocate_exact_size` → paint shadow → paint fill → paint text → handle click
 - `horizontal_centered` vertically centers children but expands to available height — use `ui.set_height()` to constrain
 - Font "+" renders ~1.5px below visual center — offset with `rect.center() - vec2(0.0, 1.5)`
+
+### Tab Toggles (segmented control)
+- Pattern: `Frame` (inner_margin 5, white fill, shadow) wrapping painter-drawn indicator + two allocated rects
+- **Do NOT use `Frame::show` for fixed-width toggles inside `vertical_centered`** — `Frame` always expands to available width regardless of content. Instead use `allocate_exact_size` for the outer rect and paint the frame background manually with `ui.painter().add(shadow.as_shape(...))` + `rect_filled`
+- Animated indicator: `animate_value_with_time(ui.id().with("key"), curr_rect.min.x, 0.2)` then `Rect::from_min_size(pos2(anime_x, ...), size)`
+- See `home/panel.rs` `render_trip_type_toggle` and `print_ticket.rs` `render_ticket_source_toggle` for reference
+
+### Keyboard Component (`components/keyboard`)
+- `keyboard::show(visible, value, max_len, ctx, id)` — `id` identifies the input; use a unique `Id` per logical input so `TextEditState` (cursor) is independent
+- Cursor-aware insert/backspace: reads `TextEditState` for the given `id`, operates at cursor position, writes back updated cursor
+- **Never share a keyboard `Id` across inputs that hold independent values** — stale cursor state from one string causes silent failures in the other
 
 ### Config
 - `crates/core/src/config.rs` — API URLs, device ID, popular station IDs, default station

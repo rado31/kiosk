@@ -21,7 +21,6 @@ const H_PADDING: f32 = 20.0;
 const V_PADDING: f32 = 20.0;
 
 // ── Full keyboard ─────────────────────────────────────────────────────────────
-const KB_INPUT_ID: &str = "keyboard_input";
 const KEY_HEIGHT: f32 = 60.0;
 const KEY_FONT_SIZE: f32 = 22.0;
 
@@ -46,7 +45,7 @@ const NP_ROW_GAP: f32 = 10.0;
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-pub fn show(visible: &mut bool, value: &mut String, max_len: Option<usize>, ctx: &Context) {
+pub fn show(visible: &mut bool, value: &mut String, max_len: Option<usize>, ctx: &Context, id: Id) {
     if !*visible {
         return;
     }
@@ -91,7 +90,7 @@ pub fn show(visible: &mut bool, value: &mut String, max_len: Option<usize>, ctx:
 
                 // Input at the top — the only interactive input
                 let mut input = Input::new(value)
-                    .id(Id::new(KB_INPUT_ID))
+                    .id(id)
                     .font_size(INPUT_FONT_SIZE)
                     .horizontal_align(Align::Center)
                     .desired_size(vec2(available - 24.0, INPUT_HEIGHT));
@@ -106,20 +105,20 @@ pub fn show(visible: &mut bool, value: &mut String, max_len: Option<usize>, ctx:
                 // Key rows
                 let key_width = (available - 9.0 * KEY_GAP) / 10.0;
 
-                render_letter_row(ui, ctx, ROW_NUMS, key_width, 0.0, value, max_len);
+                render_letter_row(ui, ctx, ROW_NUMS, key_width, 0.0, value, max_len, id);
                 ui.add_space(ROW_GAP);
 
-                render_letter_row(ui, ctx, ROW0, key_width, 0.0, value, max_len);
+                render_letter_row(ui, ctx, ROW0, key_width, 0.0, value, max_len, id);
                 ui.add_space(ROW_GAP);
 
                 let indent = (key_width + KEY_GAP) / 2.0;
-                render_letter_row(ui, ctx, ROW1, key_width, indent, value, max_len);
+                render_letter_row(ui, ctx, ROW1, key_width, indent, value, max_len, id);
                 ui.add_space(ROW_GAP);
 
-                render_row2(ui, ctx, key_width, available, value, max_len);
+                render_row2(ui, ctx, key_width, available, value, max_len, id);
                 ui.add_space(ROW_GAP);
 
-                render_space(ui, ctx, available, value, max_len);
+                render_space(ui, ctx, available, value, max_len, id);
             });
         });
 }
@@ -138,7 +137,9 @@ pub fn show_numpad(visible: &mut bool, value: &mut String, max_len: Option<usize
         .fixed_pos(screen_rect.min)
         .show(ctx, |ui| {
             ui.expand_to_include_rect(screen_rect);
+
             let response = ui.allocate_response(screen_rect.size(), Sense::CLICK);
+
             if response.clicked() {
                 *visible = false;
             }
@@ -199,6 +200,7 @@ pub fn show_numpad(visible: &mut bool, value: &mut String, max_len: Option<usize
 
 // ── Full keyboard helpers ─────────────────────────────────────────────────────
 
+#[allow(clippy::too_many_arguments)]
 fn render_letter_row(
     ui: &mut Ui,
     ctx: &Context,
@@ -207,6 +209,7 @@ fn render_letter_row(
     indent: f32,
     value: &mut String,
     max_len: Option<usize>,
+    id: Id,
 ) {
     ui.horizontal(|ui| {
         if indent > 0.0 {
@@ -219,7 +222,7 @@ fn render_letter_row(
             }
 
             if key_tapped(ui, key_width, KEY_HEIGHT, KEY_FONT_SIZE, &ch.to_string()) {
-                insert_at_cursor(ctx, Id::new(KB_INPUT_ID), value, ch, max_len);
+                insert_at_cursor(ctx, id, value, ch, max_len);
             }
         }
     });
@@ -232,6 +235,7 @@ fn render_row2(
     available: f32,
     value: &mut String,
     max_len: Option<usize>,
+    id: Id,
 ) {
     let backspace_width = available - 7.0 * key_width - 7.0 * KEY_GAP;
 
@@ -242,14 +246,14 @@ fn render_row2(
             }
 
             if key_tapped(ui, key_width, KEY_HEIGHT, KEY_FONT_SIZE, &ch.to_string()) {
-                insert_at_cursor(ctx, Id::new(KB_INPUT_ID), value, ch, max_len);
+                insert_at_cursor(ctx, id, value, ch, max_len);
             }
         }
 
         ui.add_space(KEY_GAP);
 
         if backspace_tapped(ui, backspace_width, KEY_HEIGHT) {
-            backspace_at_cursor(ctx, Id::new(KB_INPUT_ID), value);
+            backspace_at_cursor(ctx, id, value);
         }
     });
 }
@@ -260,6 +264,7 @@ fn render_space(
     available: f32,
     value: &mut String,
     max_len: Option<usize>,
+    id: Id,
 ) {
     ui.horizontal(|ui| {
         let (rect, response) = ui.allocate_exact_size(vec2(available, KEY_HEIGHT), Sense::CLICK);
@@ -285,7 +290,7 @@ fn render_space(
         );
 
         if response.clicked() {
-            insert_at_cursor(ctx, Id::new(KB_INPUT_ID), value, ' ', max_len);
+            insert_at_cursor(ctx, id, value, ' ', max_len);
         }
     });
 }
@@ -303,6 +308,7 @@ fn render_numpad_row(
 ) {
     ui.horizontal(|ui| {
         ui.add_space(offset);
+
         for (i, &ch) in keys.iter().enumerate() {
             if i > 0 {
                 ui.add_space(NP_KEY_GAP);
@@ -431,9 +437,9 @@ fn insert_at_cursor(ctx: &Context, id: Id, value: &mut String, ch: char, max_len
     value.insert(byte_pos, ch);
 
     if let Some(mut state) = TextEditState::load(ctx, id) {
-        let new_cursor = CCursorRange::one(CCursor::new(pos + 1));
-
-        state.cursor.set_char_range(Some(new_cursor));
+        state
+            .cursor
+            .set_char_range(Some(CCursorRange::one(CCursor::new(pos + 1))));
         state.store(ctx, id);
     }
 }
@@ -463,9 +469,9 @@ fn backspace_at_cursor(ctx: &Context, id: Id, value: &mut String) {
         value.remove(byte_i);
 
         if let Some(mut state) = TextEditState::load(ctx, id) {
-            let new_cursor = CCursorRange::one(CCursor::new(pos - 1));
-
-            state.cursor.set_char_range(Some(new_cursor));
+            state
+                .cursor
+                .set_char_range(Some(CCursorRange::one(CCursor::new(pos - 1))));
             state.store(ctx, id);
         }
     }
