@@ -442,7 +442,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
             state.go_to(View::Trips);
 
             thread::spawn(move || {
-                let outbound = match api::trips::fetch(api::trips::TripsParams {
+                let outbound = match api::trips::fetch(api::trips::Params {
                     source: source_id,
                     destination: destination_id,
                     date: &date,
@@ -451,13 +451,13 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
                 }) {
                     Ok(trips) => Some(trips),
                     Err(e) => {
-                        log::error!("Error on `GET /trips` (outbound). {e}");
+                        log::error!("{e}");
                         None
                     }
                 };
 
                 let inbound = if let Some(rd) = &inbound_date {
-                    match api::trips::fetch(api::trips::TripsParams {
+                    match api::trips::fetch(api::trips::Params {
                         source: destination_id,
                         destination: source_id,
                         date: rd,
@@ -466,7 +466,7 @@ pub fn bottom(state: &mut State, ui: &mut Ui) {
                     }) {
                         Ok(trips) => Some(trips),
                         Err(e) => {
-                            log::error!("Error on `GET /trips` (inbound). {e}");
+                            log::error!("{e}");
                             None
                         }
                     }

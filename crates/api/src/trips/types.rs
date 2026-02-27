@@ -1,7 +1,6 @@
-use core::Result;
 use serde::Deserialize;
 
-use crate::{client::HttpClient, response::ApiResponse};
+// Trip
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct WagonType {
@@ -35,11 +34,45 @@ pub struct Trip {
 }
 
 #[derive(Deserialize, Debug)]
-struct TripsData {
-    trips: Vec<Trip>,
+pub struct Data {
+    pub trips: Vec<Trip>,
 }
 
-pub struct TripsParams<'a> {
+// Trip's Details
+#[derive(Deserialize, Debug, Clone)]
+pub struct Seat {
+    pub id: u32,
+    pub label: String,
+    pub available: bool,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct TrainWagon {
+    pub id: u32,
+    pub number: u32,
+    pub wagon_type_title: String,
+    pub wagon_type_id: u32,
+    pub seats: Vec<Seat>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct DetailsJourney {
+    pub train_wagons: Vec<TrainWagon>,
+}
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Outbound {
+    pub trip_id: u32,
+    pub journeys: Vec<DetailsJourney>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct Details {
+    pub outbound: Outbound,
+}
+
+// Params
+pub struct Params<'a> {
     pub source: u32,
     pub destination: u32,
     pub date: &'a str,
@@ -47,25 +80,9 @@ pub struct TripsParams<'a> {
     pub child: u32,
 }
 
-pub fn fetch<'a>(params: TripsParams<'a>) -> Result<Vec<Trip>> {
-    let path = format!(
-        "/trips?source={}&destination={}&date={}&adult={}&child={}&client=terminal",
-        params.source, params.destination, params.date, params.adult, params.child,
-    );
-
-    let client = HttpClient::new();
-    let mut body = client.get(&path)?;
-    let res: ApiResponse<TripsData> = body.read_json()?;
-
-    if let Some(data) = res.data
-        && res.success
-    {
-        return Ok(data.trips);
-    }
-
-    if let Some(e) = res.error {
-        return Err(core::AppError::custom(format!("API error. {e}")));
-    }
-
-    Err(core::AppError::custom("Unknown API error"))
+pub struct DetailsParams {
+    pub trip_id: u32,
+    pub adult: u8,
+    pub child: u8,
+    pub outbound_wagon_type_id: u32,
 }
