@@ -28,7 +28,7 @@ pub fn view(state: &mut State, ctx: &egui::Context, ui: &mut egui::Ui) {
         View::Trips => trips::show(state, ctx, ui),
         View::PrintTicket => print_ticket::show(state, ui),
         View::Refund => refund::show(state, ui),
-        View::Seats => seats::show(state, ui),
+        View::Seats => seats::show(state, ctx, ui),
         View::History => history::show(state, ui),
     }
 }

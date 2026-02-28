@@ -80,4 +80,21 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "external_ticket" => "Kassa / Onlaýn",
     "external_print_notice" => "Bu biletleri çap etmek tölegli",
     "pay_and_print" => "Töle we çap et",
+
+    // Seats
+    "choose_seat" => "Ýolagçy ýeriňizi saýlaň",
+    "choose_seat_hint" => "Aşakdaky görkezilen şekiller boýunça öz oturmak isleýän ýeriňizi saýlaň",
+    "explanation" => "Düşündiriş",
+    "free_seats" => "Boş ýerler",
+    "taken_seats" => "Alynan ýerler",
+    "your_seats" => "Saýlan ýerleriňiz",
+    "selected_passenger_seats" => "Saýlan ýolagçy ýerleriňiz",
+    "passenger" => "Ýolagçy",
+    "seat_label" => "Ýer",
+    "wagon" => "Wagon",
+    "next_page" => "Indiki sahypa",
+    "floor_1" => "1-nji gat",
+    "floor_2" => "2-nji gat",
+    "floor_3" => "3-nji gat",
+    "seats_fetch_error" => "Ýerleri alyp bolmady",
 };

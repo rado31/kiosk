@@ -1,7 +1,7 @@
 use std::{sync::mpsc, thread};
 
 use eframe::{App, Frame};
-use egui::{CentralPanel, Context};
+use egui::{CentralPanel, Context, ScrollArea};
 
 use crate::{
     components,
@@ -33,10 +33,12 @@ impl State {
         style.spacing.scroll.floating_width = 6.0;
         style.spacing.scroll.floating_allocated_width = 0.0;
         style.spacing.scroll.foreground_color = true;
+        style.spacing.scroll.dormant_background_opacity = 0.0;
+        style.spacing.scroll.dormant_handle_opacity = 0.0;
         style.spacing.scroll.active_background_opacity = 0.0;
         style.spacing.scroll.active_handle_opacity = 0.3;
-        style.spacing.scroll.interact_background_opacity = 0.05;
-        style.spacing.scroll.interact_handle_opacity = 0.7;
+        style.spacing.scroll.interact_background_opacity = 0.0;
+        style.spacing.scroll.interact_handle_opacity = 0.8;
 
         ctx.set_style(style);
     }
@@ -163,7 +165,9 @@ impl State {
         let container = egui::Frame::new().fill(colors::BG_DIM).inner_margin(20.0);
 
         CentralPanel::default().frame(container).show(ctx, |ui| {
-            views::view(self, ctx, ui);
+            ScrollArea::vertical().show(ui, |ui| {
+                views::view(self, ctx, ui);
+            });
         });
 
         if let Some(progress) = self.update.status.downloading() {

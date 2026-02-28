@@ -1,4 +1,4 @@
-use std::sync::mpsc;
+use std::{sync::mpsc, thread};
 
 use egui::{
     Align, FontFamily, Frame, Image, Layout, Rect, RichText, ScrollArea, Sense, Shadow, Spinner,
@@ -77,20 +77,27 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
     let source_name = state
         .trips
         .get_source()
-        .map_or("", |s| s.get_title(is_turkmen));
+        .map_or_else(String::new, |s| s.get_title(is_turkmen).to_string());
 
     let dest_name = state
         .trips
         .get_destination()
-        .map_or("", |s| s.get_title(is_turkmen));
+        .map_or_else(String::new, |s| s.get_title(is_turkmen).to_string());
+
+    let outbound_title = format!("{source_name} - {dest_name}");
+    let inbound_title = format!("{dest_name} - {source_name}");
+    let outbound_has_error = state.trips.outbound_has_error;
+    let inbound_has_error = state.trips.inbound_has_error;
+    let outbound = state.trips.get_outbound().cloned();
+    let inbound = state.trips.get_inbound().cloned();
 
     ScrollArea::vertical().show(ui, |ui| {
         render_trip_section(
             state,
             ui,
-            &format!("{source_name} - {dest_name}"),
-            state.trips.outbound_has_error,
-            state.trips.get_outbound(),
+            &outbound_title,
+            outbound_has_error,
+            outbound.as_ref(),
         );
 
         if is_round {
@@ -99,16 +106,16 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
             render_trip_section(
                 state,
                 ui,
-                &format!("{dest_name} - {source_name}"),
-                state.trips.inbound_has_error,
-                state.trips.get_inbound(),
+                &inbound_title,
+                inbound_has_error,
+                inbound.as_ref(),
             );
         }
     });
 }
 
 fn render_trip_section(
-    state: &State,
+    state: &mut State,
     ui: &mut Ui,
     title_str: &str,
     has_error: bool,
@@ -165,7 +172,7 @@ fn parse_datetime(datetime: &str) -> (String, String) {
     (time.to_string(), date)
 }
 
-fn render_trip_card(state: &State, ui: &mut Ui, trip: &api::trips::Trip) {
+fn render_trip_card(state: &mut State, ui: &mut Ui, trip: &api::trips::Trip) {
     let card = Frame::new()
         .inner_margin(24.0)
         .fill(colors::CARD_BG)
@@ -305,7 +312,35 @@ fn render_trip_card(state: &State, ui: &mut Ui, trip: &api::trips::Trip) {
                 });
 
                 if !disabled && res.clicked() {
-                    log::debug!("{} clicked", wt.wagon_type_id);
+                    let trip_id = trip.id;
+                    let adult = state.passengers.adults as u8;
+                    let child = state.passengers.children as u8;
+                    let outbound_wagon_type_id = wt.wagon_type_id;
+                    let passenger_count =
+                        (state.passengers.adults + state.passengers.children) as usize;
+
+                    let (tx, rx) = mpsc::channel();
+
+                    state.seats.init(passenger_count);
+                    state.seats.start_fetching(rx);
+                    state.go_to(View::Seats);
+
+                    thread::spawn(move || {
+                        let result = match api::trips::fetch_details(api::trips::DetailsParams {
+                            trip_id,
+                            adult,
+                            child,
+                            outbound_wagon_type_id,
+                        }) {
+                            Ok(v) => Some(v),
+                            Err(e) => {
+                                log::error!("{e}");
+                                None
+                            }
+                        };
+
+                        tx.send(result).ok();
+                    });
                 }
             }
         });

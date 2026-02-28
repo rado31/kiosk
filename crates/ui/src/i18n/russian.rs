@@ -80,4 +80,21 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "external_ticket" => "Касса / Онлайн",
     "external_print_notice" => "Печать этих билетов платная",
     "pay_and_print" => "Оплатить и распечатать",
+
+    // Seats
+    "choose_seat" => "Выберите место пассажира",
+    "choose_seat_hint" => "Выберите место согласно схеме, показанной ниже",
+    "explanation" => "Объяснение",
+    "free_seats" => "Свободные места",
+    "taken_seats" => "Занятые места",
+    "your_seats" => "Ваши выбранные",
+    "selected_passenger_seats" => "Выбранные места пассажиров",
+    "passenger" => "Пассажир",
+    "seat_label" => "Место",
+    "wagon" => "Вагон",
+    "next_page" => "Следующая страница",
+    "floor_1" => "1-й этаж",
+    "floor_2" => "2-й этаж",
+    "floor_3" => "3-й этаж",
+    "seats_fetch_error" => "Не удалось загрузить места",
 };
