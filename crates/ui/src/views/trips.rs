@@ -12,6 +12,12 @@ use crate::{
     views::View,
 };
 
+#[derive(Clone, Copy, PartialEq)]
+enum TripSection {
+    Outbound,
+    Inbound,
+}
+
 fn poll_trips(state: &mut State, ctx: &egui::Context) {
     let Some(rx) = state.trips.take_receiver() else {
         return;
@@ -88,6 +94,7 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
     let inbound_title = format!("{dest_name} - {source_name}");
     let outbound_has_error = state.trips.outbound_has_error;
     let inbound_has_error = state.trips.inbound_has_error;
+    // Clone to release the borrow on state before passing state mutably into the scroll closure.
     let outbound = state.trips.get_outbound().cloned();
     let inbound = state.trips.get_inbound().cloned();
 
@@ -97,7 +104,9 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
             ui,
             &outbound_title,
             outbound_has_error,
-            outbound.as_ref(),
+            outbound.as_deref(),
+            is_round,
+            TripSection::Outbound,
         );
 
         if is_round {
@@ -108,7 +117,9 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
                 ui,
                 &inbound_title,
                 inbound_has_error,
-                inbound.as_ref(),
+                inbound.as_deref(),
+                is_round,
+                TripSection::Inbound,
             );
         }
     });
@@ -119,7 +130,9 @@ fn render_trip_section(
     ui: &mut Ui,
     title_str: &str,
     has_error: bool,
-    trips: Option<&Vec<api::trips::Trip>>,
+    trips: Option<&[api::trips::Trip]>,
+    is_round: bool,
+    section: TripSection,
 ) {
     let title = RichText::new(title_str)
         .size(28.0)
@@ -151,10 +164,8 @@ fn render_trip_section(
         return;
     }
 
-    let trips = trips.clone();
-
-    for trip in &trips {
-        render_trip_card(state, ui, trip);
+    for trip in trips {
+        render_trip_card(state, ui, trip, is_round, section);
         ui.add_space(12.0);
     }
 }
@@ -172,7 +183,13 @@ fn parse_datetime(datetime: &str) -> (String, String) {
     (time.to_string(), date)
 }
 
-fn render_trip_card(state: &mut State, ui: &mut Ui, trip: &api::trips::Trip) {
+fn render_trip_card(
+    state: &mut State,
+    ui: &mut Ui,
+    trip: &api::trips::Trip,
+    is_round: bool,
+    section: TripSection,
+) {
     let card = Frame::new()
         .inner_margin(24.0)
         .fill(colors::CARD_BG)
@@ -266,7 +283,6 @@ fn render_trip_card(state: &mut State, ui: &mut Ui, trip: &api::trips::Trip) {
 
         ui.add_space(20.0);
 
-        // Wagon types with prices
         let wagon_types = &trip.wagon_types;
 
         ui.columns_const(|cols: &mut [Ui; 4]| {
@@ -283,8 +299,22 @@ fn render_trip_card(state: &mut State, ui: &mut Ui, trip: &api::trips::Trip) {
 
                 let (rect, res) = col.allocate_exact_size(vec2(width, 60.0), sense);
 
+                let is_selected = is_round
+                    && match section {
+                        TripSection::Outbound => state
+                            .trips
+                            .outbound_selection
+                            .is_some_and(|(tid, wid)| tid == trip.id && wid == wt.wagon_type_id),
+                        TripSection::Inbound => state
+                            .trips
+                            .inbound_selection
+                            .is_some_and(|(tid, wid)| tid == trip.id && wid == wt.wagon_type_id),
+                    };
+
                 let (bg, fg) = if disabled {
                     (colors::BG_5, colors::FG_DISABLED)
+                } else if is_selected {
+                    (colors::PRIMARY, colors::WHITE)
                 } else {
                     (colors::PRIMARY_BG, colors::PRIMARY)
                 };
@@ -315,32 +345,62 @@ fn render_trip_card(state: &mut State, ui: &mut Ui, trip: &api::trips::Trip) {
                     let trip_id = trip.id;
                     let adult = state.passengers.adults as u8;
                     let child = state.passengers.children as u8;
-                    let outbound_wagon_type_id = wt.wagon_type_id;
+                    let wagon_type_id = wt.wagon_type_id;
                     let passenger_count =
                         (state.passengers.adults + state.passengers.children) as usize;
 
-                    let (tx, rx) = mpsc::channel();
+                    let spawn_fetch = |trip_id: u32, wt_id: u32, tx: mpsc::Sender<_>| {
+                        thread::spawn(move || {
+                            let result =
+                                match api::trips::fetch_details(api::trips::DetailsParams {
+                                    trip_id,
+                                    adult,
+                                    child,
+                                    wagon_type_id: wt_id,
+                                }) {
+                                    Ok(v) => Some(v),
+                                    Err(e) => {
+                                        log::error!("{e}");
+                                        None
+                                    }
+                                };
 
-                    state.seats.init(passenger_count);
-                    state.seats.start_fetching(rx);
-                    state.go_to(View::Seats);
+                            tx.send(result).ok();
+                        });
+                    };
 
-                    thread::spawn(move || {
-                        let result = match api::trips::fetch_details(api::trips::DetailsParams {
-                            trip_id,
-                            adult,
-                            child,
-                            outbound_wagon_type_id,
-                        }) {
-                            Ok(v) => Some(v),
-                            Err(e) => {
-                                log::error!("{e}");
-                                None
+                    if !is_round {
+                        let (tx, rx) = mpsc::channel();
+                        state.seats.init(passenger_count);
+                        state.seats.start_fetching(rx);
+                        state.go_to(View::Seats);
+                        spawn_fetch(trip_id, wagon_type_id, tx);
+                    } else {
+                        match section {
+                            TripSection::Outbound => {
+                                state.trips.outbound_selection = Some((trip_id, wagon_type_id));
                             }
-                        };
+                            TripSection::Inbound => {
+                                state.trips.inbound_selection = Some((trip_id, wagon_type_id));
+                            }
+                        }
 
-                        tx.send(result).ok();
-                    });
+                        if let (Some((out_trip_id, out_wt_id)), Some((in_trip_id, in_wt_id))) = (
+                            state.trips.outbound_selection,
+                            state.trips.inbound_selection,
+                        ) {
+                            let (tx_out, rx_out) = mpsc::channel();
+                            let (tx_in, rx_in) = mpsc::channel();
+
+                            state.seats.init(passenger_count);
+                            state.seats.start_fetching(rx_out);
+                            state.seats.start_fetching_inbound(rx_in);
+                            state.go_to(View::Seats);
+
+                            spawn_fetch(out_trip_id, out_wt_id, tx_out);
+                            spawn_fetch(in_trip_id, in_wt_id, tx_in);
+                        }
+                    }
                 }
             }
         });

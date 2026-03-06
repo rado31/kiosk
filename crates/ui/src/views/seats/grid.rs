@@ -4,7 +4,7 @@ use egui::{Align2, FontId, Rect, Sense, Stroke, StrokeKind, Ui, pos2, vec2};
 
 use crate::{
     i18n::t,
-    state::State,
+    state::{State, seats::SlideDir},
     theme::{colors, corners},
 };
 
@@ -112,11 +112,11 @@ pub(super) fn render(state: &mut State, ui: &mut Ui) {
 
     let slide_dir = std::mem::take(&mut state.seats.slide_dir);
 
-    if slide_dir != 0.0 {
+    if slide_dir != SlideDir::None {
         let now = ui.input(|i| i.time);
 
         ui.ctx()
-            .memory_mut(|m| m.data.insert_temp(anim_id, (slide_dir, now)));
+            .memory_mut(|m| m.data.insert_temp(anim_id, (slide_dir.to_f32(), now)));
     }
 
     // --- Compute visual x offset ---

@@ -84,5 +84,5 @@ pub struct DetailsParams {
     pub trip_id: u32,
     pub adult: u8,
     pub child: u8,
-    pub outbound_wagon_type_id: u32,
+    pub wagon_type_id: u32,
 }

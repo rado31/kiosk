@@ -82,6 +82,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "pay_and_print" => "Оплатить и распечатать",
 
     // Seats
+    "outbound_leg" => "Туда",
+    "inbound_leg" => "Обратно",
     "choose_seat" => "Выберите место пассажира",
     "choose_seat_hint" => "Выберите место согласно схеме, показанной ниже",
     "explanation" => "Объяснение",

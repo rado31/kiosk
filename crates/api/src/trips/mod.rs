@@ -34,7 +34,7 @@ pub fn fetch<'a>(params: Params<'a>) -> Result<Vec<Trip>> {
 pub fn fetch_details(params: DetailsParams) -> Result<Vec<TrainWagon>> {
     let path = format!(
         "/cashiers/trips/{}?adult={}&child={}&outbound_wagon_type_id={}",
-        params.trip_id, params.adult, params.child, params.outbound_wagon_type_id,
+        params.trip_id, params.adult, params.child, params.wagon_type_id,
     );
 
     let client = HttpClient::new();

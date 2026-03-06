@@ -82,6 +82,8 @@ pub static TRANSLATIONS: phf::Map<&'static str, &'static str> = phf_map! {
     "pay_and_print" => "Töle we çap et",
 
     // Seats
+    "outbound_leg" => "Gidiş",
+    "inbound_leg" => "Gaýdyş",
     "choose_seat" => "Ýolagçy ýeriňizi saýlaň",
     "choose_seat_hint" => "Aşakdaky görkezilen şekiller boýunça öz oturmak isleýän ýeriňizi saýlaň",
     "explanation" => "Düşündiriş",

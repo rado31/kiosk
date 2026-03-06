@@ -23,6 +23,9 @@ pub struct State {
     outbound_data: Option<Vec<Trip>>,
     inbound_data: Option<Vec<Trip>>,
     receiver: Option<Receiver<TripResult>>,
+    // Wagon type selected for each leg in a round trip: (trip_id, wagon_type_id).
+    pub outbound_selection: Option<(u32, u32)>,
+    pub inbound_selection: Option<(u32, u32)>,
 }
 
 impl Default for State {
@@ -39,6 +42,8 @@ impl Default for State {
             outbound_data: None,
             inbound_data: None,
             receiver: None,
+            outbound_selection: None,
+            inbound_selection: None,
         }
     }
 }
@@ -80,6 +85,8 @@ impl State {
         self.outbound_data = None;
         self.inbound_data = None;
         self.receiver = Some(receiver);
+        self.outbound_selection = None;
+        self.inbound_selection = None;
     }
 
     pub fn take_receiver(&mut self) -> Option<Receiver<TripResult>> {

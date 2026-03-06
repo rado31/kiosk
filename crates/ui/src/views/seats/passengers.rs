@@ -2,8 +2,9 @@ use egui::{Align, Align2, FontFamily, FontId, Frame, Layout, RichText, Sense, Sh
 
 use crate::{
     i18n::t,
-    state::State,
+    state::{State, seats::SeatsLeg, trips::TripKind},
     theme::{colors, corners},
+    views::View,
 };
 
 pub(super) fn render(state: &mut State, ui: &mut Ui) {
@@ -22,7 +23,7 @@ pub(super) fn render(state: &mut State, ui: &mut Ui) {
             for i in 0..total {
                 let seat_label = state
                     .seats
-                    .selected
+                    .inbound_selected
                     .get(i)
                     .and_then(|s| s.as_ref())
                     .map(|s| s.seat_label.clone());
@@ -105,7 +106,11 @@ pub(super) fn render(state: &mut State, ui: &mut Ui) {
             );
 
             if btn_res.clicked() {
-                log::debug!("proceed to next page");
+                if state.trips.kind == TripKind::Round && state.seats.leg == SeatsLeg::Outbound {
+                    state.seats.switch_to_inbound();
+                } else {
+                    state.go_to(View::PrintTicket);
+                }
             }
         });
     });

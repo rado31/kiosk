@@ -1,10 +1,8 @@
-use std::sync::mpsc;
-
-use egui::{Align2, FontId, Frame, RichText, Sense, Shadow, Spinner, Stroke, Ui, vec2};
+use egui::{Align2, FontFamily, FontId, Frame, RichText, Sense, Shadow, Spinner, Stroke, Ui, vec2};
 
 use crate::{
     i18n::t,
-    state::State,
+    state::{State, seats::SeatsLeg, trips::TripKind},
     theme::{colors, corners},
     views::View,
 };
@@ -14,28 +12,10 @@ mod grid;
 mod nav;
 mod passengers;
 
-fn poll_details(state: &mut State, ctx: &egui::Context) {
-    let Some(rx) = state.seats.take_receiver() else {
-        return;
-    };
-
-    match rx.try_recv() {
-        Ok(result) => {
-            state.seats.set_result(result);
-            ctx.request_repaint();
-        }
-        Err(mpsc::TryRecvError::Empty) => {
-            state.seats.start_fetching(rx);
-            ctx.request_repaint();
-        }
-        Err(mpsc::TryRecvError::Disconnected) => {
-            state.seats.set_result(None);
-        }
-    }
-}
-
 pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
-    poll_details(state, ctx);
+    if state.seats.poll_outbound() | state.seats.poll_inbound() {
+        ctx.request_repaint();
+    }
 
     let title = RichText::new(t(&state.lang, "choose_seat"))
         .size(30.0)
@@ -50,6 +30,23 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
         .color(colors::FG_MUTED);
 
     ui.vertical_centered(|ui| ui.label(subtitle));
+
+    if state.trips.kind == TripKind::Round {
+        ui.add_space(20.0);
+
+        let leg_key = match state.seats.leg {
+            SeatsLeg::Outbound => "outbound_leg",
+            SeatsLeg::Inbound => "inbound_leg",
+        };
+
+        let leg_label = RichText::new(t(&state.lang, leg_key))
+            .size(32.0)
+            .color(colors::BLACK)
+            .family(FontFamily::Name("bold".into()));
+
+        ui.vertical_centered(|ui| ui.label(leg_label));
+    }
+
     ui.add_space(20.0);
 
     render_back_button(state, ui);
@@ -81,7 +78,7 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
                 ui.add(Spinner::new().size(50.0).color(colors::PRIMARY));
                 ui.add_space(50.0);
             });
-        } else if state.seats.has_error {
+        } else if state.seats.outbound_has_error {
             let msg = RichText::new(t(&state.lang, "seats_fetch_error"))
                 .size(22.0)
                 .color(colors::ERROR);
