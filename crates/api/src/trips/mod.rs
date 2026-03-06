@@ -1,6 +1,6 @@
 use core::Result;
 
-use crate::{client::HttpClient, response::ApiResponse};
+use crate::{client, response::ApiResponse};
 
 mod types;
 
@@ -12,8 +12,7 @@ pub fn fetch<'a>(params: Params<'a>) -> Result<Vec<Trip>> {
         params.source, params.destination, params.date, params.adult, params.child,
     );
 
-    let client = HttpClient::new();
-    let mut body = client.get(&path)?;
+    let mut body = client::get(&path)?;
     let res: ApiResponse<Data> = body.read_json()?;
 
     if let Some(data) = res.data
@@ -37,14 +36,19 @@ pub fn fetch_details(params: DetailsParams) -> Result<Vec<TrainWagon>> {
         params.trip_id, params.adult, params.child, params.wagon_type_id,
     );
 
-    let client = HttpClient::new();
-    let mut body = client.get(&path)?;
+    let mut body = client::get(&path)?;
     let res: ApiResponse<Details> = body.read_json()?;
 
-    if let Some(mut data) = res.data
+    if let Some(data) = res.data
         && res.success
     {
-        return Ok(data.outbound.journeys.remove(0).train_wagons);
+        return data
+            .outbound
+            .journeys
+            .into_iter()
+            .next()
+            .map(|j| j.train_wagons)
+            .ok_or_else(|| core::AppError::custom("Empty journeys in trip details"));
     }
 
     if let Some(e) = res.error {

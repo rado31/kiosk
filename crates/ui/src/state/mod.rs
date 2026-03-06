@@ -49,7 +49,6 @@ impl State {
     pub fn reset(&mut self) {
         self.passengers = passengers::State::default();
         self.calendar = calendar::State::default();
-        self.stations = stations::State::default();
         self.trips = trips::State::default();
         self.seats = seats::State::default();
     }

@@ -1,4 +1,4 @@
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, TryRecvError};
 
 use api::stations::Station;
 
@@ -38,8 +38,26 @@ impl State {
         self.receiver = Some(receiver);
     }
 
-    pub fn take_receiver(&mut self) -> Option<Receiver<Option<Vec<Station>>>> {
-        self.receiver.take()
+    /// Polls the receiver. Returns `true` if a repaint is needed.
+    pub fn poll(&mut self) -> bool {
+        let Some(rx) = self.receiver.take() else {
+            return false;
+        };
+
+        match rx.try_recv() {
+            Ok(data) => {
+                self.set_result(data);
+                true
+            }
+            Err(TryRecvError::Empty) => {
+                self.start_fetching(rx);
+                true
+            }
+            Err(TryRecvError::Disconnected) => {
+                self.set_result(None);
+                false
+            }
+        }
     }
 
     pub fn has_error(&self) -> bool {

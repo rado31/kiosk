@@ -1,6 +1,6 @@
 pub struct State {
-    pub adults: i8,
-    pub children: i8,
+    pub adults: u8,
+    pub children: u8,
 }
 
 impl Default for State {
@@ -13,38 +13,30 @@ impl Default for State {
 }
 
 impl State {
-    pub fn total(&self) -> i8 {
+    pub fn total(&self) -> u8 {
         self.adults + self.children
     }
 
-    fn can_add(&self) -> bool {
-        self.total() < 9
-    }
-
-    fn can_remove(&self, new_total: i8) -> bool {
-        new_total >= 0 && self.total() > 1
-    }
-
     pub fn add_adult(&mut self) {
-        if self.can_add() {
+        if self.total() < 9 {
             self.adults += 1;
         }
     }
 
     pub fn add_child(&mut self) {
-        if self.can_add() {
+        if self.total() < 9 {
             self.children += 1;
         }
     }
 
     pub fn remove_adult(&mut self) {
-        if self.can_remove(self.adults - 1) {
+        if self.adults > 0 && self.total() > 1 {
             self.adults -= 1;
         }
     }
 
     pub fn remove_child(&mut self) {
-        if self.can_remove(self.children - 1) {
+        if self.children > 0 && self.total() > 1 {
             self.children -= 1;
         }
     }

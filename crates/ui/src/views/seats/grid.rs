@@ -83,18 +83,25 @@ fn organize_seats(seats: &[api::trips::Seat], floors: usize) -> Vec<Vec<Vec<api:
 }
 
 pub(super) fn render(state: &mut State, ui: &mut Ui) {
-    let wagon_idx = state.seats.current_wagon;
-    let Some(wagon) = state.seats.current_wagon().cloned() else {
-        return;
-    };
+    if state.seats.needs_organize {
+        state.seats.needs_organize = false;
 
-    let floors = floor_count(wagon.wagon_type_id);
-    let compartments = organize_seats(&wagon.seats, floors);
+        let organized = state
+            .seats
+            .current_wagon()
+            .map(|w| organize_seats(&w.seats, floor_count(w.wagon_type_id)))
+            .unwrap_or_default();
 
-    if compartments.is_empty() {
+        state.seats.organized_seats = organized;
+    }
+
+    if state.seats.organized_seats.is_empty() {
         return;
     }
 
+    let wagon_idx = state.seats.current_wagon;
+    let compartments = &state.seats.organized_seats;
+    let floors = compartments[0].len();
     let n_comps = compartments.len();
     let n = n_comps as f32;
     let available_w = ui.available_width();
@@ -116,7 +123,7 @@ pub(super) fn render(state: &mut State, ui: &mut Ui) {
         let now = ui.input(|i| i.time);
 
         ui.ctx()
-            .memory_mut(|m| m.data.insert_temp(anim_id, (slide_dir.to_f32(), now)));
+            .memory_mut(|m| m.data.insert_temp(anim_id, (slide_dir.as_f32(), now)));
     }
 
     // --- Compute visual x offset ---

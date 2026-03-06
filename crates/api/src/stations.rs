@@ -1,7 +1,7 @@
 use core::Result;
 use serde::Deserialize;
 
-use crate::{client::HttpClient, response::ApiResponse};
+use crate::{client, response::ApiResponse};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Station {
@@ -27,8 +27,7 @@ struct StationsData {
 
 /// Fetch all stations from the API (blocking).
 pub fn fetch_all() -> Result<Vec<Station>> {
-    let client = HttpClient::new();
-    let mut body = client.get("/stations")?;
+    let mut body = client::get("/stations")?;
     let res: ApiResponse<StationsData> = body.read_json()?;
 
     if let Some(data) = res.data

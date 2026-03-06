@@ -11,6 +11,7 @@ pub enum TripKind {
     Round,
 }
 
+#[derive(Default)]
 pub struct State {
     pub kind: TripKind,
     pub source: Option<Station>,
@@ -20,32 +21,12 @@ pub struct State {
     pub inbound_has_error: bool,
     searched_at: Option<Instant>,
     is_fetching: bool,
-    outbound_data: Option<Vec<Trip>>,
-    inbound_data: Option<Vec<Trip>>,
+    pub outbound_data: Option<Vec<Trip>>,
+    pub inbound_data: Option<Vec<Trip>>,
     receiver: Option<Receiver<TripResult>>,
     // Wagon type selected for each leg in a round trip: (trip_id, wagon_type_id).
     pub outbound_selection: Option<(u32, u32)>,
     pub inbound_selection: Option<(u32, u32)>,
-}
-
-impl Default for State {
-    fn default() -> Self {
-        Self {
-            kind: TripKind::OneWay,
-            source: None,
-            destination: None,
-            selected: false,
-            outbound_has_error: false,
-            inbound_has_error: false,
-            searched_at: None,
-            is_fetching: false,
-            outbound_data: None,
-            inbound_data: None,
-            receiver: None,
-            outbound_selection: None,
-            inbound_selection: None,
-        }
-    }
 }
 
 impl State {
@@ -56,22 +37,6 @@ impl State {
 
     pub fn mark_searched(&mut self) {
         self.searched_at = Some(Instant::now());
-    }
-
-    pub fn get_source(&self) -> Option<&Station> {
-        self.source.as_ref()
-    }
-
-    pub fn get_destination(&self) -> Option<&Station> {
-        self.destination.as_ref()
-    }
-
-    pub fn get_outbound(&self) -> Option<&Vec<Trip>> {
-        self.outbound_data.as_ref()
-    }
-
-    pub fn get_inbound(&self) -> Option<&Vec<Trip>> {
-        self.inbound_data.as_ref()
     }
 
     pub fn is_fetching(&self) -> bool {

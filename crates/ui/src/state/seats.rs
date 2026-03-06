@@ -1,6 +1,6 @@
 use std::sync::mpsc::{Receiver, TryRecvError};
 
-use api::trips::TrainWagon;
+use api::trips::{Seat, TrainWagon};
 
 #[derive(Clone)]
 pub struct SeatSelection {
@@ -25,7 +25,7 @@ pub enum SlideDir {
 }
 
 impl SlideDir {
-    pub fn to_f32(self) -> f32 {
+    pub fn as_f32(&self) -> f32 {
         match self {
             Self::None => 0.0,
             Self::Prev => -1.0,
@@ -52,6 +52,10 @@ pub struct State {
     pub current_wagon: usize,
     pub slide_dir: SlideDir,
     pub leg: SeatsLeg,
+
+    // Cached layout for the current wagon; rebuilt when needs_organize is set.
+    pub organized_seats: Vec<Vec<Vec<Seat>>>,
+    pub needs_organize: bool,
 }
 
 impl State {
@@ -133,6 +137,7 @@ impl State {
         self.outbound_has_error = result.is_none();
         self.outbound_wagons = result;
         self.outbound_is_fetching = false;
+        self.needs_organize = true;
     }
 
     pub fn start_fetching_inbound(&mut self, rx: Receiver<Option<Vec<TrainWagon>>>) {
@@ -160,12 +165,14 @@ impl State {
         self.current_wagon = 0;
         self.slide_dir = SlideDir::None;
         self.leg = SeatsLeg::Inbound;
+        self.needs_organize = true;
     }
 
     pub fn prev_wagon(&mut self) {
         if self.current_wagon > 0 {
             self.current_wagon -= 1;
             self.slide_dir = SlideDir::Prev;
+            self.needs_organize = true;
         }
     }
 
@@ -175,6 +182,7 @@ impl State {
         if self.current_wagon < max {
             self.current_wagon += 1;
             self.slide_dir = SlideDir::Next;
+            self.needs_organize = true;
         }
     }
 

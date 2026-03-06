@@ -82,12 +82,14 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
 
     let source_name = state
         .trips
-        .get_source()
+        .source
+        .as_ref()
         .map_or_else(String::new, |s| s.get_title(is_turkmen).to_string());
 
     let dest_name = state
         .trips
-        .get_destination()
+        .destination
+        .as_ref()
         .map_or_else(String::new, |s| s.get_title(is_turkmen).to_string());
 
     let outbound_title = format!("{source_name} - {dest_name}");
@@ -95,8 +97,8 @@ pub fn show(state: &mut State, ctx: &egui::Context, ui: &mut Ui) {
     let outbound_has_error = state.trips.outbound_has_error;
     let inbound_has_error = state.trips.inbound_has_error;
     // Clone to release the borrow on state before passing state mutably into the scroll closure.
-    let outbound = state.trips.get_outbound().cloned();
-    let inbound = state.trips.get_inbound().cloned();
+    let outbound = state.trips.outbound_data.clone();
+    let inbound = state.trips.inbound_data.clone();
 
     ScrollArea::vertical().show(ui, |ui| {
         render_trip_section(
@@ -171,7 +173,7 @@ fn render_trip_section(
 }
 
 /// Parses `2026-02-20T20:30:00+05:00` into `("20:30", "20.02.2026")`.
-fn parse_datetime(datetime: &str) -> (String, String) {
+fn parse_datetime(datetime: &str) -> (&str, String) {
     let (date_part, rest) = datetime.split_once('T').unwrap_or((datetime, ""));
     let time = rest.get(..5).unwrap_or(rest);
     let date: Vec<_> = date_part.split('-').collect();
@@ -180,7 +182,7 @@ fn parse_datetime(datetime: &str) -> (String, String) {
         _ => date_part.to_string(),
     };
 
-    (time.to_string(), date)
+    (time, date)
 }
 
 fn render_trip_card(
@@ -216,7 +218,7 @@ fn render_trip_card(
                 ui.label(label);
                 ui.add_space(10.0);
 
-                let time = RichText::new(&dep_time)
+                let time = RichText::new(dep_time)
                     .size(28.0)
                     .family(FontFamily::Name("bold".into()))
                     .color(colors::FG);
@@ -270,7 +272,7 @@ fn render_trip_card(
                 ui.label(label);
                 ui.add_space(10.0);
 
-                let time = RichText::new(&arr_time)
+                let time = RichText::new(arr_time)
                     .size(28.0)
                     .family(FontFamily::Name("bold".into()))
                     .color(colors::FG);
@@ -343,8 +345,8 @@ fn render_trip_card(
 
                 if !disabled && res.clicked() {
                     let trip_id = trip.id;
-                    let adult = state.passengers.adults as u8;
-                    let child = state.passengers.children as u8;
+                    let adult = state.passengers.adults;
+                    let child = state.passengers.children;
                     let wagon_type_id = wt.wagon_type_id;
                     let passenger_count =
                         (state.passengers.adults + state.passengers.children) as usize;

@@ -24,23 +24,21 @@ impl App for State {
 
 impl State {
     pub fn config_style(&self, ctx: &Context) {
-        let mut style = (*ctx.style()).clone();
+        ctx.style_mut(|style| {
+            style.spacing.item_spacing.x = 0.0;
+            style.interaction.selectable_labels = false;
 
-        style.spacing.item_spacing.x = 0.0;
-        style.interaction.selectable_labels = false;
-
-        style.spacing.scroll.floating = true;
-        style.spacing.scroll.floating_width = 6.0;
-        style.spacing.scroll.floating_allocated_width = 0.0;
-        style.spacing.scroll.foreground_color = true;
-        style.spacing.scroll.dormant_background_opacity = 0.0;
-        style.spacing.scroll.dormant_handle_opacity = 0.0;
-        style.spacing.scroll.active_background_opacity = 0.0;
-        style.spacing.scroll.active_handle_opacity = 0.3;
-        style.spacing.scroll.interact_background_opacity = 0.0;
-        style.spacing.scroll.interact_handle_opacity = 0.8;
-
-        ctx.set_style(style);
+            style.spacing.scroll.floating = true;
+            style.spacing.scroll.floating_width = 6.0;
+            style.spacing.scroll.floating_allocated_width = 0.0;
+            style.spacing.scroll.foreground_color = true;
+            style.spacing.scroll.dormant_background_opacity = 0.0;
+            style.spacing.scroll.dormant_handle_opacity = 0.0;
+            style.spacing.scroll.active_background_opacity = 0.0;
+            style.spacing.scroll.active_handle_opacity = 0.3;
+            style.spacing.scroll.interact_background_opacity = 0.0;
+            style.spacing.scroll.interact_handle_opacity = 0.8;
+        });
     }
 
     pub fn poll_update(&mut self) {
@@ -141,21 +139,8 @@ impl State {
             });
         }
 
-        let Some(rx) = self.stations.take_receiver() else {
-            return;
-        };
-
-        match rx.try_recv() {
-            Ok(data) => {
-                self.stations.set_result(data);
-                ctx.request_repaint();
-            }
-            Err(mpsc::TryRecvError::Empty) => {
-                self.stations.start_fetching(rx);
-            }
-            Err(mpsc::TryRecvError::Disconnected) => {
-                self.stations.set_result(None);
-            }
+        if self.stations.poll() {
+            ctx.request_repaint();
         }
     }
 
