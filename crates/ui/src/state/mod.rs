@@ -51,6 +51,7 @@ impl State {
         self.calendar = calendar::State::default();
         self.trips = trips::State::default();
         self.seats = seats::State::default();
+        self.stations.retry();
     }
 
     pub fn current_view(&self) -> View {

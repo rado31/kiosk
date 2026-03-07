@@ -123,6 +123,7 @@ impl State {
     pub fn poll_stations(&mut self, ctx: &Context) {
         if self.stations.should_fetch() {
             let (tx, rx) = mpsc::channel();
+            let ctx = ctx.clone();
 
             self.stations.start_fetching(rx);
 
@@ -136,12 +137,11 @@ impl State {
                 };
 
                 tx.send(result).ok();
+                ctx.request_repaint();
             });
         }
 
-        if self.stations.poll() {
-            ctx.request_repaint();
-        }
+        self.stations.poll();
     }
 
     pub fn render_ui(&mut self, ctx: &Context) {

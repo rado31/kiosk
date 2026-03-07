@@ -33,31 +33,31 @@ impl State {
         !self.has_fetched && !self.is_fetching
     }
 
+    pub fn retry(&mut self) {
+        if !self.has_error {
+            return;
+        }
+
+        self.has_fetched = false;
+        self.has_error = false;
+        self.receiver = None;
+    }
+
     pub fn start_fetching(&mut self, receiver: Receiver<Option<Vec<Station>>>) {
         self.is_fetching = true;
         self.receiver = Some(receiver);
     }
 
-    /// Polls the receiver. Returns `true` if a repaint is needed.
-    pub fn poll(&mut self) -> bool {
-        let Some(rx) = self.receiver.take() else {
-            return false;
+    pub fn poll(&mut self) {
+        let Some(rx) = &self.receiver else {
+            return;
         };
 
         match rx.try_recv() {
-            Ok(data) => {
-                self.set_result(data);
-                true
-            }
-            Err(TryRecvError::Empty) => {
-                self.start_fetching(rx);
-                true
-            }
-            Err(TryRecvError::Disconnected) => {
-                self.set_result(None);
-                false
-            }
-        }
+            Ok(data) => self.set_result(data),
+            Err(TryRecvError::Empty) => (),
+            Err(TryRecvError::Disconnected) => self.set_result(None),
+        };
     }
 
     pub fn has_error(&self) -> bool {
